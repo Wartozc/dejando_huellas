@@ -1,0 +1,1101 @@
+{
+	"info": {
+		"_postman_id": "dejando-huellas-api",
+		"name": "Dejando Huellas API",
+		"description": "API collection for Emprendedores Dejando Huellas de Ebéjico backend",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080/dejando_huellas/api/v1"
+		},
+		{
+			"key": "basePath",
+			"value": "/dejando_huellas/api/v1"
+		},
+		{
+			"key": "adminToken",
+			"value": ""
+		},
+		{
+			"key": "memberToken",
+			"value": ""
+		},
+		{
+			"key": "newMemberId",
+			"value": ""
+		},
+		{
+			"key": "postId",
+			"value": ""
+		},
+		{
+			"key": "memberId",
+			"value": ""
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{adminToken}}",
+				"type": "string"
+			}
+		]
+	},
+	"item": [
+		{
+			"name": "Health Check",
+			"item": [
+				{
+					"name": "Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/health",
+							"host": ["localhost:8080"],
+							"path": ["health"]
+						},
+						"description": "Check if the API is running (outside base path)"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Login - Admin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set('adminToken', jsonData.token);",
+									"    // Store user ID if available",
+									"    if (jsonData.user && jsonData.user.id) {",
+									"        pm.collectionVariables.set('memberId', jsonData.user.id);",
+									"    }",
+									"    console.log('Admin token saved');",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"admin@dejandohuellas.com\",\n    \"password\": \"admin123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["auth", "login"]
+						},
+						"description": "Login with admin credentials"
+					},
+					"response": []
+				},
+				{
+					"name": "Login - Member",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set('memberToken', jsonData.token);",
+									"    // Store user ID if available",
+									"    if (jsonData.user && jsonData.user.id) {",
+									"        pm.collectionVariables.set('memberId', jsonData.user.id);",
+									"    }",
+									"    console.log('Member token saved');",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"member@example.com\",\n    \"password\": \"member123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["auth", "login"]
+						},
+						"description": "Login with member credentials (must be approved first)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Current User",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{adminToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/auth/me",
+							"host": ["{{baseUrl}}"],
+							"path": ["auth", "me"]
+						},
+						"description": "Get information about the currently authenticated user"
+					},
+					"response": []
+				},
+				{
+					"name": "Login - Invalid Credentials",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"wrong@example.com\",\n    \"password\": \"wrongpassword\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["auth", "login"]
+						},
+						"description": "Test login with invalid credentials - should return 401"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Members (Public)",
+			"item": [
+				{
+					"name": "Register Member",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set('newMemberId', jsonData.user.id);",
+									"    console.log('Member registered with ID:', jsonData.user.id);",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"John Doe\",\n    \"email\": \"john.doe@example.com\",\n    \"phone\": \"+57 300 123 4567\",\n    \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/members/register",
+							"host": ["{{baseUrl}}"],
+							"path": ["members", "register"]
+						},
+						"description": "Register a new member (public endpoint). Member will be PENDING until approved by admin."
+					},
+					"response": []
+				},
+				{
+					"name": "Register Member - Duplicate Email",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Jane Doe\",\n    \"email\": \"john.doe@example.com\",\n    \"phone\": \"+57 300 987 6543\",\n    \"password\": \"password456\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/members/register",
+							"host": ["{{baseUrl}}"],
+							"path": ["members", "register"]
+						},
+						"description": "Try to register with an already existing email - should return 409"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Members (Admin Only)",
+			"item": [
+				{
+					"name": "Get All Members",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{adminToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/members",
+							"host": ["{{baseUrl}}"],
+							"path": ["members"]
+						},
+						"description": "Get all members (admin only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Member by ID",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{adminToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/members/:id",
+							"host": ["{{baseUrl}}"],
+							"path": ["members", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "",
+									"description": "Member ID"
+								}
+							]
+						},
+						"description": "Get a specific member by ID (admin only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Member",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{adminToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"John Updated\",\n    \"phone\": \"+57 300 999 8888\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/members/:id",
+							"host": ["{{baseUrl}}"],
+							"path": ["members", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "",
+									"description": "Member ID"
+								}
+							]
+						},
+						"description": "Update a member (admin only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Approve Member",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{adminToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/members/:id/approve",
+							"host": ["{{baseUrl}}"],
+							"path": ["members", ":id", "approve"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "",
+									"description": "Member ID to approve"
+								}
+							]
+						},
+						"description": "Approve a pending member (admin only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Reject Member",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{adminToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/members/:id/reject",
+							"host": ["{{baseUrl}}"],
+							"path": ["members", ":id", "reject"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "",
+									"description": "Member ID to reject"
+								}
+							]
+						},
+						"description": "Reject a pending member (admin only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Member",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{adminToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/members/:id",
+							"host": ["{{baseUrl}}"],
+							"path": ["members", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "",
+									"description": "Member ID to delete"
+								}
+							]
+						},
+						"description": "Delete a member (admin only)"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Posts (Public)",
+			"item": [
+				{
+					"name": "Get All Posts",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/posts",
+							"host": ["{{baseUrl}}"],
+							"path": ["posts"]
+						},
+						"description": "Get all posts (public endpoint)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Post by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/posts/:id",
+							"host": ["{{baseUrl}}"],
+							"path": ["posts", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "",
+									"description": "Post ID"
+								}
+							]
+						},
+						"description": "Get a specific post by ID (public endpoint)"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Posts (Protected)",
+			"item": [
+				{
+					"name": "Create Post (Admin)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{adminToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Gran Jornada de Emprendimiento\",\n    \"content\": \"Nos complace invitar a toda la comunidad a nuestra próxima jornada de emprendimiento donde reuniremos a los mejores emprendedores de Ebéjico.\",\n    \"image_url\": \"https://example.com/images/jornada-2024.jpg\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/posts",
+							"host": ["{{baseUrl}}"],
+							"path": ["posts"]
+						},
+						"description": "Create a new post (admin only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Post (Member)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set('postId', jsonData.post.id);",
+									"    console.log('Post created with ID:', jsonData.post.id);",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{memberToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Mi Primer Emprendimiento\",\n    \"content\": \"Estoy muy emocionado de compartir mi historia de emprendimiento con la comunidad de Dejando Huellas.\",\n    \"image_url\": \"https://example.com/images/my-business.jpg\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/posts",
+							"host": ["{{baseUrl}}"],
+							"path": ["posts"]
+						},
+						"description": "Create a new post as a MEMBER (allowed role: MEMBER or ADMIN)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Post",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{adminToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Jornada de Emprendimiento - Fecha Actualizada\",\n    \"content\": \"Contenido actualizado de la jornada.\",\n    \"image_url\": \"https://example.com/images/jornada-2024-v2.jpg\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/posts/:id",
+							"host": ["{{baseUrl}}"],
+							"path": ["posts", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "",
+									"description": "Post ID to update"
+								}
+							]
+						},
+						"description": "Update a post (admin only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Post",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{adminToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/posts/:id",
+							"host": ["{{baseUrl}}"],
+							"path": ["posts", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "",
+									"description": "Post ID to delete"
+								}
+							]
+						},
+						"description": "Delete a post (admin only)"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Image Uploads",
+			"item": [
+				{
+					"name": "Create Post with Images",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set('postId', jsonData.post.id);",
+									"    console.log('Post with images created with ID:', jsonData.post.id);",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{memberToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "title",
+									"value": "Nueva Tienda de Artesanías",
+									"description": "Post title"
+								},
+								{
+									"key": "content",
+									"value": "Les invito a visitar nuestra nueva tienda de artesanías locales en el centro de Ebéjico.",
+									"description": "Post content"
+								},
+								{
+									"key": "images",
+									"value": "",
+									"type": "file",
+									"description": "Select image files to upload (multiple)"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/posts/with-images",
+							"host": ["{{baseUrl}}"],
+							"path": ["posts", "with-images"]
+						},
+						"description": "Create a post with images (multipart/form-data). Auth required: MEMBER or ADMIN"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Post with Images",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{adminToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "title",
+									"value": "Tienda de Artesanías - Actualizada",
+									"description": "Post title"
+								},
+								{
+									"key": "content",
+									"value": "Hemos ampliado nuestro catálogo con nuevas piezas tradicionales.",
+									"description": "Post content"
+								},
+								{
+									"key": "images",
+									"value": "",
+									"type": "file",
+									"description": "Select new image files to upload (multiple)"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/posts/:id/with-images",
+							"host": ["{{baseUrl}}"],
+							"path": ["posts", ":id", "with-images"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "",
+									"description": "Post ID to update"
+								}
+							]
+						},
+						"description": "Update a post with images (multipart/form-data). Auth required: ADMIN only"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Contact",
+			"item": [
+				{
+					"name": "Send Contact Message (Public)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"María García\",\n    \"email\": \"maria.garcia@example.com\",\n    \"message\": \"Hola, me gustaría obtener más información sobre los programas de emprendimiento para jóvenes en Ebéjico.\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/contact",
+							"host": ["{{baseUrl}}"],
+							"path": ["contact"]
+						},
+						"description": "Send a contact message (public endpoint)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Messages (Admin)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{adminToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/contact",
+							"host": ["{{baseUrl}}"],
+							"path": ["contact"]
+						},
+						"description": "Get all contact messages (admin only)"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Workflow Tests",
+			"item": [
+				{
+					"name": "1. Register New Member",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set('newMemberId', jsonData.user.id);",
+									"    console.log('New member registered with ID:', jsonData.user.id);",
+									"    console.log('Status:', jsonData.user.status);",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Carlos Pérez\",\n    \"email\": \"carlos.perez@example.com\",\n    \"phone\": \"+57 300 555 1234\",\n    \"password\": \"carlospass123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/members/register",
+							"host": ["{{baseUrl}}"],
+							"path": ["members", "register"]
+						},
+						"description": "Step 1: Register a new member (status will be PENDING)"
+					},
+					"response": []
+				},
+				{
+					"name": "2. Approve Member (as Admin)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    console.log('Member approved:', jsonData.user.status);",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{adminToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/members/{{newMemberId}}/approve",
+							"host": ["{{baseUrl}}"],
+							"path": ["members", "{{newMemberId}}", "approve"]
+						},
+						"description": "Step 2: Approve the new member (admin only, use ID from step 1)"
+					},
+					"response": []
+				},
+				{
+					"name": "3. Login as Member",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set('memberToken', jsonData.token);",
+									"    if (jsonData.user && jsonData.user.id) {",
+									"        pm.collectionVariables.set('memberId', jsonData.user.id);",
+									"    }",
+									"    console.log('Member login successful, token saved');",
+									"    console.log('User role:', jsonData.user.role);",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"carlos.perez@example.com\",\n    \"password\": \"carlospass123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["auth", "login"]
+						},
+						"description": "Step 3: Login as the newly approved member"
+					},
+					"response": []
+				},
+				{
+					"name": "4. Create Post with Images",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set('postId', jsonData.post.id);",
+									"    console.log('Post with images created with ID:', jsonData.post.id);",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{memberToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "title",
+									"value": "Mi Nuevo Emprendimiento",
+									"description": "Post title"
+								},
+								{
+									"key": "content",
+									"value": "Les comparto mi historia de emprendimiento en la comunidad de Ebéjico.",
+									"description": "Post content"
+								},
+								{
+									"key": "images",
+									"value": "",
+									"type": "file",
+									"description": "Select image files to upload"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/posts/with-images",
+							"host": ["{{baseUrl}}"],
+							"path": ["posts", "with-images"]
+						},
+						"description": "Step 4: Create a post with images as a MEMBER"
+					},
+					"response": []
+				},
+				{
+					"name": "5. Get Posts (Public)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    console.log('Total posts:', jsonData.posts.length);",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/posts",
+							"host": ["{{baseUrl}}"],
+							"path": ["posts"]
+						},
+						"description": "Step 5: Get all posts (public endpoint)"
+					},
+					"response": []
+				},
+				{
+					"name": "6. Update Post with Images (as Admin)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{adminToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "title",
+									"value": "Emprendimiento Actualizado",
+									"description": "Updated post title"
+								},
+								{
+									"key": "content",
+									"value": "Gracias a todos los que han apoyado mi proyecto. ¡Hemos crecido mucho!",
+									"description": "Updated post content"
+								},
+								{
+									"key": "images",
+									"value": "",
+									"type": "file",
+									"description": "Select new image files"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/posts/{{postId}}/with-images",
+							"host": ["{{baseUrl}}"],
+							"path": ["posts", "{{postId}}", "with-images"]
+						},
+						"description": "Step 6: Update post with images (admin only)"
+					},
+					"response": []
+				},
+				{
+					"name": "7. Delete Post (as Admin)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{adminToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/posts/{{postId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["posts", "{{postId}}"]
+						},
+						"description": "Step 7: Delete the post (admin only)"
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
