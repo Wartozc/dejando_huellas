@@ -28,7 +28,7 @@ func NewPostRepository(ctx context.Context, mongoURI, dbName string) *PostReposi
 	collection := client.Database(dbName).Collection("posts")
 	return &PostRepository{
 		collection: collection,
-		client:    client,
+		client:     client,
 	}
 }
 
@@ -76,17 +76,117 @@ func (r *PostRepository) GetByID(ctx context.Context, id primitive.ObjectID) (*d
 }
 
 func (r *PostRepository) GetAll(ctx context.Context) ([]*domain.Post, error) {
-	opts := options.Find().SetSort(bson.D{{Key: "created_at", Value: -1}})
-	cursor, err := r.collection.Find(ctx, bson.M{}, opts)
+	log.Println("Repository.GetAll: Fetching all posts from database...")
+
+	// First, let's check if we can connect to the collection
+	db := r.collection.Database()
+	log.Printf("Repository.GetAll: Database=%s, Collection=posts", db.Name())
+
+	// Get the database name from config
+	// Also count total documents in the collection
+	count, err := r.collection.CountDocuments(ctx, bson.M{})
+	log.Printf("Repository.GetAll: Total documents in collection: %d, err=%v", count, err)
+
+	// Use manual decoding to handle image_url properly
+	cursor, err := r.collection.Find(ctx, bson.M{})
 	if err != nil {
+		log.Printf("Repository.GetAll: Find error: %v", err)
 		return nil, err
 	}
 	defer cursor.Close(ctx)
 
+	// Manually decode each document to handle the image_url field correctly
 	var posts []*domain.Post
-	if err := cursor.All(ctx, &posts); err != nil {
+	for cursor.Next(ctx) {
+		// Use bson.M to get raw document first
+		var rawDoc bson.M
+		if err := cursor.Decode(&rawDoc); err != nil {
+			log.Printf("Repository.GetAll: Raw decode error: %v", err)
+			continue
+		}
+
+		// Create a Post and manually map fields
+		post := &domain.Post{}
+
+		// Handle ID
+		if id, ok := rawDoc["_id"]; ok {
+			post.ID = id.(primitive.ObjectID)
+		}
+
+		// Handle simple string fields
+		if title, ok := rawDoc["title"].(string); ok {
+			post.Title = title
+		}
+		if content, ok := rawDoc["content"].(string); ok {
+			post.Content = content
+		}
+
+		// Handle image_url - this is where the problem is
+		if imageURL, ok := rawDoc["image_url"]; ok && imageURL != nil {
+			log.Printf("Repository.GetAll: Raw image_url type: %T, value: %v", imageURL, imageURL)
+
+			// Try different ways to convert to []string
+			switch v := imageURL.(type) {
+			case []interface{}:
+				// MongoDB array stored as []interface{}
+				imageURLs := make([]string, 0, len(v))
+				for _, item := range v {
+					if s, ok := item.(string); ok {
+						imageURLs = append(imageURLs, s)
+					}
+				}
+				post.ImageURL = imageURLs
+				log.Printf("Repository.GetAll: Converted from []interface{}: %v", post.ImageURL)
+			case primitive.A:
+				// MongoDB array stored as primitive.A (bson.A)
+				imageURLs := make([]string, 0, len(v))
+				for _, item := range v {
+					if s, ok := item.(string); ok {
+						imageURLs = append(imageURLs, s)
+					}
+				}
+				post.ImageURL = imageURLs
+				log.Printf("Repository.GetAll: Converted from primitive.A: %v", post.ImageURL)
+			case []string:
+				// Already []string
+				post.ImageURL = v
+			case string:
+				// Single string - could be legacy data, convert to slice
+				post.ImageURL = []string{v}
+				log.Printf("Repository.GetAll: Converted from string: %v", post.ImageURL)
+			default:
+				log.Printf("Repository.GetAll: Unexpected image_url type: %T", imageURL)
+			}
+		}
+
+		// Handle created_by
+		if createdBy, ok := rawDoc["created_by"]; ok && createdBy != nil {
+			post.CreatedBy = createdBy.(primitive.ObjectID)
+		}
+
+		// Handle dates
+		if createdAt, ok := rawDoc["created_at"]; ok {
+			if t, ok := createdAt.(primitive.DateTime); ok {
+				post.CreatedAt = t.Time()
+			}
+		}
+		if updatedAt, ok := rawDoc["updated_at"]; ok {
+			if t, ok := updatedAt.(primitive.DateTime); ok {
+				post.UpdatedAt = t.Time()
+			}
+		}
+
+		posts = append(posts, post)
+		log.Printf("Repository.GetAll: Decoded post[%d] ID=%s Title=%s ImageURL=%v",
+			len(posts)-1, post.ID.Hex(), post.Title, post.ImageURL)
+	}
+
+	if err := cursor.Err(); err != nil {
+		log.Printf("Repository.GetAll: Cursor error: %v", err)
 		return nil, err
 	}
+
+	log.Printf("Repository.GetAll: Found %d posts", len(posts))
 	return posts, nil
 }
 
@@ -95,7 +195,7 @@ func (r *PostRepository) Update(ctx context.Context, id primitive.ObjectID, post
 
 	update := bson.M{
 		"$set": bson.M{
-			"title":       post.Title,
+			"title":      post.Title,
 			"content":    post.Content,
 			"image_url":  post.ImageURL,
 			"updated_at": post.UpdatedAt,

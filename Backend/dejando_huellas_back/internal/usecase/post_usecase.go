@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"log"
+	"os"
 
 	"dejando_huellas_back/internal/domain"
 	"dejando_huellas_back/internal/repository"
@@ -97,7 +98,34 @@ func (uc *PostUseCase) GetByID(ctx context.Context, id string) (*domain.Post, er
 }
 
 func (uc *PostUseCase) GetAll(ctx context.Context) ([]*domain.Post, error) {
-	return uc.repo.GetAll(ctx)
+	// Create a log file for debugging
+	logFile, err := os.OpenFile("usecase_debug.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	if err == nil {
+		defer logFile.Close()
+		log.SetOutput(logFile)
+		log.Println("=== PostUseCase.GetAll: Starting ===")
+	} else {
+		log.Println("PostUseCase.GetAll: Could not create log file:", err)
+	}
+
+	log.Println("PostUseCase.GetAll: Fetching all posts...")
+	posts, err := uc.repo.GetAll(ctx)
+	if err != nil {
+		log.Printf("PostUseCase.GetAll: ERROR from repository: %v", err)
+		log.Printf("PostUseCase.GetAll: Error type: %T", err)
+		// Return error so we can see it
+		return nil, err
+	}
+	log.Printf("PostUseCase.GetAll: Got %d posts from repository", len(posts))
+
+	// Debug: log each post
+	for i, p := range posts {
+		log.Printf("PostUseCase.GetAll: Post[%d] ID=%s Title=%s ImageURL=%v CreatedAt=%v",
+			i, p.ID.Hex(), p.Title, p.ImageURL, p.CreatedAt)
+	}
+
+	log.Println("=== PostUseCase.GetAll: Done ===")
+	return posts, nil
 }
 
 func (uc *PostUseCase) Update(ctx context.Context, id string, req *domain.UpdatePostRequest) (*domain.Post, error) {

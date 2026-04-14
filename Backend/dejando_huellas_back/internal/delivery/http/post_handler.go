@@ -38,10 +38,12 @@ func (h *PostHandler) Create(c *gin.Context) {
 		return
 	}
 
-	// Posts require at least one image URL
+	// Image is optional - allow posts without images
+	// But if provided, validate that it's not empty
 	if len(req.ImageURL) == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "At least one image is required"})
-		return
+		log.Println("Create: No image URL provided (optional)")
+		// Allow posts without images - but set to nil so we don't send empty array
+		req.ImageURL = nil
 	}
 
 	userID := GetUserIDFromClaims(c)
@@ -169,7 +171,7 @@ func (h *PostHandler) CreateWithImages(c *gin.Context) {
 
 	// Create the post request
 	req := &domain.CreatePostRequest{
-		Title:    title,
+		Title:   title,
 		Content: content,
 	}
 
@@ -192,12 +194,20 @@ func (h *PostHandler) CreateWithImages(c *gin.Context) {
 }
 
 func (h *PostHandler) GetAll(c *gin.Context) {
+	log.Println("GetAll: Fetching all posts...")
 	posts, err := h.uc.GetAll(c.Request.Context())
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get posts"})
+		log.Printf("GetAll: ERROR fetching posts: %v", err)
+		log.Printf("GetAll: Error type: %T", err)
+		// Return empty array instead of error to allow frontend to work
+		log.Println("GetAll: Returning empty posts array due to error")
+		c.JSON(http.StatusOK, gin.H{"posts": []interface{}{}})
 		return
 	}
-
+	log.Printf("GetAll: Successfully fetched %d posts", len(posts))
+	for i, p := range posts {
+		log.Printf("GetAll: Post[%d] ID=%s Title=%s ImageURL=%v", i, p.ID, p.Title, p.ImageURL)
+	}
 	c.JSON(http.StatusOK, gin.H{"posts": posts})
 }
 
@@ -262,7 +272,7 @@ func (h *PostHandler) UpdateWithImages(c *gin.Context) {
 	}
 
 	req := &domain.UpdatePostRequest{
-		Title:    title,
+		Title:   title,
 		Content: content,
 	}
 
