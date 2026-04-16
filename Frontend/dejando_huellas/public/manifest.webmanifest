@@ -9,6 +9,8 @@
   "scope": "/",
   "start_url": "/",
   "id": "dejando-huellas",
+  "gcm_sender_id": "YOUR_GCM_SENDER_ID_HERE",
+  "gcm_user_visible_only": true,
   "icons": [
     {
       "src": "icons/icon-72x72.png",

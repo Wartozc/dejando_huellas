@@ -1,14 +1,16 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Post, PostCreateDto, PostUpdateDto, PostsResponse, PostResponse } from '../models';
+import { AuthService } from './auth.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class PublicationsService {
   private apiUrl = `${environment.apiUrl}/posts`;
+  private authService = inject(AuthService);
 
   constructor(private http: HttpClient) {}
 
@@ -31,12 +33,18 @@ export class PublicationsService {
   }
 
   /**
-   * Create a new post (Admin only)
+   * Create a new post (Authenticated users - members and admin)
    * Backend: POST /posts
    * Response: { message: string, post: Post }
    */
   createPost(data: PostCreateDto): Observable<PostResponse> {
-    return this.http.post<PostResponse>(this.apiUrl, data);
+    const user = this.authService.user();
+    const body = {
+      ...data,
+      author_id: user?.id,
+      author_name: user?.name
+    };
+    return this.http.post<PostResponse>(this.apiUrl, body);
   }
 
   /**
@@ -58,7 +66,7 @@ export class PublicationsService {
   }
 
   /**
-   * Create a post with images (Admin only)
+   * Create a post with images (Authenticated users - members and admin)
    * Backend: POST /posts/with-images
    * Uses multipart/form-data for file uploads
    * Response: { message: string, post: Post }

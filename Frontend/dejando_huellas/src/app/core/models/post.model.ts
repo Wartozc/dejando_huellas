@@ -8,13 +8,13 @@ export interface Post {
   content: string;
   image_url?: string[];
   created_by?: string;
+  author_id?: string;
+  author_name?: string;
   creator?: {
     id: string;
     name: string;
     email: string;
   };
-  // Optional alias for creator name for easier access in templates
-  author_name?: string;
   created_at: string;
   updated_at?: string;
 }
@@ -23,6 +23,8 @@ export interface PostCreateDto {
   title: string;
   content: string;
   image_url?: string[];
+  author_id?: string;
+  author_name?: string;
 }
 
 export interface PostUpdateDto {

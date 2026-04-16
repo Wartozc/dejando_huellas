@@ -1,6 +1,9 @@
 {
   "$schema": "./node_modules/@angular/service-worker/config/schema.json",
   "index": "/index.html",
+  "push": {
+    "enabled": true
+  },
   "assetGroups": [
     {
       "name": "app",
@@ -52,6 +55,19 @@
         "maxSize": 20,
         "maxAge": "1d",
         "timeout": "5s",
+        "strategy": "freshness"
+      }
+    },
+    {
+      "name": "api-messages",
+      "urls": [
+        "/api/v1/messages",
+        "/api/v1/messages/*"
+      ],
+      "cacheConfig": {
+        "maxSize": 100,
+        "maxAge": "1m",
+        "timeout": "3s",
         "strategy": "freshness"
       }
     }

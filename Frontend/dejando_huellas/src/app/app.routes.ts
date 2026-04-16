@@ -16,11 +16,15 @@ import { ActivitiesComponent } from './features/public/activities/activities.com
 import { ActivityDetailComponent } from './features/public/activities/activity-detail.component';
 import { ContactComponent } from './features/public/contact/contact.component';
 
+// Chat
+import { ChatComponent } from './features/chat/chat.component';
+
 // Admin
 import { AdminDashboardComponent } from './features/admin/dashboard/admin-dashboard.component';
 import { AdminMembersComponent } from './features/admin/members/admin-members.component';
 import { AdminPublicationsComponent } from './features/admin/publications/admin-publications.component';
 import { AdminContactComponent } from './features/admin/contact/admin-contact.component';
+import { AdminReportComponent } from './features/admin/report/admin-report.component';
 
 export const routes: Routes = [
   // Public Layout Routes
@@ -33,6 +37,7 @@ export const routes: Routes = [
       { path: 'actividades', component: ActivitiesComponent },
       { path: 'actividades/:id', component: ActivityDetailComponent },
       { path: 'contacto', component: ContactComponent },
+      { path: 'comunidad', component: ChatComponent, canActivate: [authGuard] },
     ]
   },
   
@@ -59,6 +64,7 @@ export const routes: Routes = [
       { path: 'members', component: AdminMembersComponent },
       { path: 'publications', component: AdminPublicationsComponent },
       { path: 'contact', component: AdminContactComponent },
+      { path: 'report', component: AdminReportComponent },
     ]
   },
   

@@ -273,9 +273,10 @@ export class LoginComponent {
     this.errorMessage.set('');
 
     this.authService.login({ email: this.email, password: this.password }).subscribe({
-      next: () => {
+      next: (response) => {
         const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
-        this.toastService.success('Bienvenido');
+        const userName = response.user.name;
+        this.toastService.success(`Bienvenido, ${userName}!`);
         this.router.navigateByUrl(returnUrl);
       },
       error: (error) => {

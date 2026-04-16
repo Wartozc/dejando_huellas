@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, computed, HostListener, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { AuthService } from '../../core/services';
@@ -40,9 +40,29 @@ import { ToastContainerComponent } from '../../shared/components';
                   Panel Admin
                 </a>
               }
-              <button class="nav-link logout-btn" (click)="logout()">
-                Cerrar Sesión
-              </button>
+              <a routerLink="/comunidad" routerLinkActive="active" class="nav-link comunidad-link">
+                Comunidad
+              </a>
+              <div class="user-menu">
+                <button class="user-dropdown-toggle" (click)="toggleUserDropdown($event)">
+                  <span class="user-name">{{ userName() }}</span>
+                  <svg class="dropdown-arrow" [class.open]="dropdownOpen()" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M6 9l6 6 6-6"/>
+                  </svg>
+                </button>
+                @if (dropdownOpen()) {
+                  <div class="user-dropdown-menu">
+                    <button class="dropdown-item logout-item" (click)="logout()">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                        <polyline points="16,17 21,12 16,7"/>
+                        <line x1="21" y1="12" x2="9" y2="12"/>
+                      </svg>
+                      Cerrar Sesión
+                    </button>
+                  </div>
+                }
+              </div>
             } @else {
               <a routerLink="/login" class="nav-link login-btn">
                 Iniciar Sesión
@@ -214,6 +234,15 @@ import { ToastContainerComponent } from '../../shared/components';
       }
     }
     
+    .comunidad-link {
+      color: #1B5E20;
+      
+      &:hover {
+        color: #2E7D32;
+        background: rgba(27, 94, 32, 0.08);
+      }
+    }
+    
     .login-btn {
       background: #1B5E20;
       color: white !important;
@@ -223,11 +252,124 @@ import { ToastContainerComponent } from '../../shared/components';
       }
     }
     
-    .logout-btn {
+    .user-menu {
+      display: flex;
+      align-items: center;
+      position: relative;
+      
+      @media (max-width: 768px) {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 0.5rem 1rem;
+        width: 100%;
+      }
+    }
+    
+    .user-dropdown-toggle {
+      display: flex;
+      align-items: center;
+      gap: 0.375rem;
+      padding: 0.5rem 0.75rem;
+      background: none;
+      border: none;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+      color: #1B5E20;
+      font-weight: 600;
+      font-size: 0.875rem;
+      
+      &:hover {
+        background: rgba(27, 94, 32, 0.08);
+      }
+      
+      @media (max-width: 768px) {
+        padding: 0;
+        width: 100%;
+        justify-content: space-between;
+      }
+    }
+    
+    .dropdown-arrow {
+      width: 16px;
+      height: 16px;
+      transition: transform 0.2s ease;
+      
+      &.open {
+        transform: rotate(180deg);
+      }
+    }
+    
+    .user-dropdown-menu {
+      position: absolute;
+      top: calc(100% + 0.5rem);
+      right: 0;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+      min-width: 180px;
+      overflow: hidden;
+      z-index: 100;
+      animation: dropdownFadeIn 0.2s ease;
+      
+      @media (max-width: 768px) {
+        position: static;
+        box-shadow: none;
+        width: 100%;
+        animation: none;
+        background: transparent;
+        padding-top: 0.5rem;
+      }
+    }
+    
+    @keyframes dropdownFadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .dropdown-item {
+      display: flex;
+      align-items: center;
+      gap: 0.625rem;
+      width: 100%;
+      padding: 0.75rem 1rem;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #424242;
+      transition: all 0.2s ease;
+      text-decoration: none;
+      
+      svg {
+        width: 18px;
+        height: 18px;
+        flex-shrink: 0;
+      }
+      
+      &:hover {
+        background: rgba(0, 0, 0, 0.04);
+      }
+      
+      @media (max-width: 768px) {
+        padding: 0.75rem 0;
+        justify-content: flex-start;
+      }
+    }
+    
+    .logout-item {
       color: #f44336;
       
       &:hover {
         background: rgba(244, 67, 54, 0.08);
+        color: #d32f2f;
       }
     }
     
@@ -313,9 +455,23 @@ import { ToastContainerComponent } from '../../shared/components';
 })
 export class PublicLayoutComponent {
   authService = inject(AuthService);
+  private elementRef = inject(ElementRef);
   mobileMenuOpen = signal(false);
   isScrolled = signal(false);
+  dropdownOpen = signal(false);
   currentYear = new Date().getFullYear();
+  
+  // Computed signal to check if user is authenticated but NOT admin
+  isMember = computed(() => {
+    const user = this.authService.user();
+    return this.authService.isAuthenticated() && user?.role !== 'ADMIN';
+  });
+
+  // Computed signal to get the authenticated user's name
+  userName = computed(() => {
+    const user = this.authService.user();
+    return user?.name || '';
+  });
 
   constructor() {
     if (typeof window !== 'undefined') {
@@ -327,6 +483,34 @@ export class PublicLayoutComponent {
 
   toggleMobileMenu(): void {
     this.mobileMenuOpen.update(v => !v);
+  }
+
+  toggleUserDropdown(event: Event): void {
+    event.stopPropagation();
+    this.dropdownOpen.update(v => !v);
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: Event): void {
+    if (!this.dropdownOpen()) {
+      return;
+    }
+    
+    // Check if click is outside the dropdown menu element
+    const dropdownMenu = this.elementRef.nativeElement.querySelector('.user-dropdown-menu');
+    const dropdownToggle = this.elementRef.nativeElement.querySelector('.user-dropdown-toggle');
+    
+    const target = event.target as HTMLElement;
+    const isClickInsideDropdown = dropdownMenu?.contains(target) || dropdownToggle?.contains(target);
+    
+    if (!isClickInsideDropdown) {
+      this.dropdownOpen.set(false);
+    }
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscapeKey(): void {
+    this.dropdownOpen.set(false);
   }
 
   logout(): void {
