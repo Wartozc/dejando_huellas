@@ -52,6 +52,13 @@ func (h *PostHandler) Create(c *gin.Context) {
 		return
 	}
 
+	// Extract user name from JWT claims
+	userName := GetUserNameFromClaims(c)
+
+	// Add author info to the request
+	req.AuthorID = userID
+	req.AuthorName = userName
+
 	post, err := h.uc.Create(c.Request.Context(), &req, userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create post"})
@@ -171,8 +178,10 @@ func (h *PostHandler) CreateWithImages(c *gin.Context) {
 
 	// Create the post request
 	req := &domain.CreatePostRequest{
-		Title:   title,
-		Content: content,
+		Title:      title,
+		Content:    content,
+		AuthorID:   userID,
+		AuthorName: GetUserNameFromClaims(c),
 	}
 
 	// Create post with images

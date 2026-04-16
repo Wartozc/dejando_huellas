@@ -40,11 +40,25 @@ func (uc *PostUseCase) Create(ctx context.Context, req *domain.CreatePostRequest
 		return nil, ErrInvalidInput
 	}
 
+	// Parse author ID if provided
+	var authorObjID primitive.ObjectID
+	if req.AuthorID != "" {
+		authorObjID, err = primitive.ObjectIDFromHex(req.AuthorID)
+		if err != nil {
+			// If invalid, use userID
+			authorObjID = userObjID
+		}
+	} else {
+		authorObjID = userObjID
+	}
+
 	post := &domain.Post{
-		Title:     req.Title,
-		Content:   req.Content,
-		ImageURL:  req.ImageURL,
-		CreatedBy: userObjID,
+		Title:      req.Title,
+		Content:    req.Content,
+		ImageURL:   req.ImageURL,
+		CreatedBy:  userObjID,
+		AuthorID:   authorObjID,
+		AuthorName: req.AuthorName,
 	}
 
 	if err := uc.repo.Create(ctx, post); err != nil {
@@ -65,11 +79,25 @@ func (uc *PostUseCase) CreateWithImages(ctx context.Context, req *domain.CreateP
 		return nil, ErrInvalidInput
 	}
 
+	// Parse author ID if provided
+	var authorObjID primitive.ObjectID
+	if req.AuthorID != "" {
+		authorObjID, err = primitive.ObjectIDFromHex(req.AuthorID)
+		if err != nil {
+			// If invalid, use userID
+			authorObjID = userObjID
+		}
+	} else {
+		authorObjID = userObjID
+	}
+
 	post := &domain.Post{
-		Title:     req.Title,
-		Content:   req.Content,
-		ImageURL:  imageURLs,
-		CreatedBy: userObjID,
+		Title:      req.Title,
+		Content:    req.Content,
+		ImageURL:   imageURLs,
+		CreatedBy:  userObjID,
+		AuthorID:   authorObjID,
+		AuthorName: req.AuthorName,
 	}
 
 	log.Printf("Post struct created: Title=%s, ImageURLs=%v", post.Title, post.ImageURL)

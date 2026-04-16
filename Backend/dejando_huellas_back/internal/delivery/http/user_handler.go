@@ -168,6 +168,13 @@ func GetUserIDFromClaims(c *gin.Context) string {
 	return ""
 }
 
+func GetUserNameFromClaims(c *gin.Context) string {
+	if userName, exists := c.Get("name"); exists {
+		return userName.(string)
+	}
+	return ""
+}
+
 func GetRoleFromClaims(c *gin.Context) string {
 	if role, exists := c.Get("role"); exists {
 		return strings.ToUpper(role.(string))

@@ -14,8 +14,8 @@ import (
 
 var (
 	ErrInvalidCredentials = errors.New("invalid credentials")
-	ErrUserNotApproved   = errors.New("user not approved")
-	ErrUserPending       = errors.New("user is pending approval")
+	ErrUserNotApproved    = errors.New("user not approved")
+	ErrUserPending        = errors.New("user is pending approval")
 )
 
 type AuthUseCase struct {
@@ -25,6 +25,7 @@ type AuthUseCase struct {
 
 type JWTClaims struct {
 	UserID string      `json:"user_id"`
+	Name   string      `json:"name"`
 	Email  string      `json:"email"`
 	Role   domain.Role `json:"role"`
 	jwt.RegisteredClaims
@@ -70,6 +71,7 @@ func (uc *AuthUseCase) Login(ctx context.Context, req *domain.LoginRequest) (*do
 func (uc *AuthUseCase) generateToken(user *domain.User) (string, error) {
 	claims := &JWTClaims{
 		UserID: user.ID.Hex(),
+		Name:   user.Name,
 		Email:  user.Email,
 		Role:   user.Role,
 		RegisteredClaims: jwt.RegisteredClaims{

@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"context"
-	"errors"
 	"time"
 
 	"dejando_huellas_back/internal/domain"
@@ -10,13 +9,6 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/crypto/bcrypt"
-)
-
-var (
-	ErrEmailAlreadyExists = errors.New("email already exists")
-	ErrUserNotFound        = errors.New("user not found")
-	ErrInvalidInput        = errors.New("invalid input")
-	ErrUnauthorized        = errors.New("unauthorized")
 )
 
 type UserUseCase struct {

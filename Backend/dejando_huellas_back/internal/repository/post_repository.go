@@ -164,6 +164,14 @@ func (r *PostRepository) GetAll(ctx context.Context) ([]*domain.Post, error) {
 			post.CreatedBy = createdBy.(primitive.ObjectID)
 		}
 
+		// Handle author_id and author_name
+		if authorID, ok := rawDoc["author_id"]; ok && authorID != nil {
+			post.AuthorID = authorID.(primitive.ObjectID)
+		}
+		if authorName, ok := rawDoc["author_name"].(string); ok {
+			post.AuthorName = authorName
+		}
+
 		// Handle dates
 		if createdAt, ok := rawDoc["created_at"]; ok {
 			if t, ok := createdAt.(primitive.DateTime); ok {

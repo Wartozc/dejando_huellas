@@ -15,8 +15,8 @@ import (
 	"dejando_huellas_back/internal/service"
 	"dejando_huellas_back/internal/usecase"
 
-	"github.com/gin-gonic/gin"
 	httpdelivery "dejando_huellas_back/internal/delivery/http"
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
@@ -30,12 +30,16 @@ func main() {
 	userRepo := repository.NewUserRepository(ctx, cfg.MongoURI, cfg.Database)
 	postRepo := repository.NewPostRepository(ctx, cfg.MongoURI, cfg.Database)
 	contactRepo := repository.NewContactRepository(ctx, cfg.MongoURI, cfg.Database)
+	messageRepo := repository.NewMessageRepository(ctx, cfg.MongoURI, cfg.Database)
 
 	if err := userRepo.EnsureIndexes(); err != nil {
 		log.Printf("Warning: Failed to create indexes: %v", err)
 	}
 	if err := postRepo.EnsureIndexes(); err != nil {
 		log.Printf("Warning: Failed to create indexes: %v", err)
+	}
+	if err := messageRepo.EnsureIndexes(); err != nil {
+		log.Printf("Warning: Failed to create message indexes: %v", err)
 	}
 
 	// Initialize default admin user
@@ -45,17 +49,18 @@ func main() {
 
 	userUC := usecase.NewUserUseCase(userRepo)
 	authUC := usecase.NewAuthUseCase(userRepo)
-	
+
 	// Set JWT secret for authentication
 	authUC.SetJWTSecret(cfg.JWTSecret)
 
 	postUC := usecase.NewPostUseCase(postRepo)
 	contactUC := usecase.NewContactUseCase(contactRepo)
+	messageUC := usecase.NewMessageUseCase(messageRepo, userRepo)
 
 	// Initialize image uploader if GitHub token is configured
 	var postHandler *httpdelivery.PostHandler
 	var imageUploader *service.ImageUploader
-	
+
 	if cfg.GitHubToken != "" && cfg.GitHubToken != "your_github_personal_access_token" {
 		log.Println("Initializing GitHub image uploader...")
 		imageUploader = service.NewImageUploader(
@@ -76,6 +81,7 @@ func main() {
 	userHandler := httpdelivery.NewUserHandler(userUC)
 	authHandler := httpdelivery.NewAuthHandler(authUC)
 	contactHandler := httpdelivery.NewContactHandler(contactUC)
+	messageHandler := httpdelivery.NewMessageHandler(messageUC)
 
 	router := gin.Default()
 	router.Use(middleware.CORS())
@@ -83,7 +89,7 @@ func main() {
 	authMw := middleware.NewAuthMiddleware(cfg.JWTSecret)
 	roleMw := middleware.NewRoleMiddleware()
 
-	httpdelivery.SetupRoutes(cfg, router, authHandler, userHandler, postHandler, contactHandler, authMw, roleMw)
+	httpdelivery.SetupRoutes(cfg, router, authHandler, userHandler, postHandler, contactHandler, messageHandler, authMw, roleMw)
 
 	srv := &http.Server{
 		Addr:    ":" + cfg.Port,

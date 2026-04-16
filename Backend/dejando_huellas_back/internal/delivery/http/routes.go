@@ -15,10 +15,11 @@ func SetupRoutes(
 	userHandler *UserHandler,
 	postHandler *PostHandler,
 	contactHandler *ContactHandler,
+	messageHandler *MessageHandler,
 	authMw *middleware.AuthMiddleware,
 	roleMw *middleware.RoleMiddleware,
 ) {
-	router.GET(cfg.BasePath + "/health", func(c *gin.Context) {
+	router.GET(cfg.BasePath+"/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{"status": "ok", "message": "API is healthy"})
 	})
 
@@ -85,6 +86,26 @@ func SetupRoutes(
 		{
 			contact.POST("", contactHandler.Create)
 			contact.GET("", authMw.Authenticate(), roleMw.RequireAdmin(), contactHandler.GetAll)
+		}
+
+		// Messages (Group Chat) - accessible to all authenticated non-admin users
+		messages := api.Group("/messages")
+		{
+			// Get all messages (any authenticated member, but NOT admin)
+			messages.GET("", authMw.Authenticate(), roleMw.RequireMember(), messageHandler.GetAll)
+			// Get new messages since timestamp (any authenticated member, but NOT admin)
+			messages.GET("/since", authMw.Authenticate(), roleMw.RequireMember(), messageHandler.GetSince)
+			// Post new message (any authenticated member, but NOT admin)
+			messages.POST("", authMw.Authenticate(), roleMw.RequireMember(), messageHandler.Create)
+			// IMPORTANT: Delete ALL messages must be defined BEFORE /:id to avoid conflicts
+			// Clear all messages (admin only)
+			messages.DELETE("", authMw.Authenticate(), roleMw.RequireAdmin(), messageHandler.DeleteAll)
+			// Update a message (only by author)
+			messages.PUT("/:id", authMw.Authenticate(), roleMw.RequireMember(), messageHandler.Update)
+			// Delete a message (only by author)
+			messages.DELETE("/:id", authMw.Authenticate(), roleMw.RequireMember(), messageHandler.Delete)
+			// Add reaction to a message (any authenticated member)
+			messages.POST("/:id/reactions", authMw.Authenticate(), roleMw.RequireMember(), messageHandler.AddReaction)
 		}
 	}
 }
