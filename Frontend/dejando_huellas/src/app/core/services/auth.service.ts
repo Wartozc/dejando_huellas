@@ -69,11 +69,44 @@ export class AuthService {
   }
 
   /**
-   * Check if token is valid
+   * Check if token exists and is valid
+   */
+  hasValidToken(): boolean {
+    const token = this._token();
+    if (!token) return false;
+    
+    // Check if token appears to be a valid JWT format (has two dots)
+    const parts = token.split('.');
+    if (parts.length !== 3) {
+      // Invalid JWT format - clear the invalid token
+      this.clearSession();
+      return false;
+    }
+    
+    try {
+      // Decode the payload to check expiration
+      const payload = JSON.parse(atob(parts[1]));
+      const isExpired = payload.exp ? (Date.now() / 1000) >= payload.exp : false;
+      
+      if (isExpired) {
+        // Token is expired - clear the session
+        this.clearSession();
+        return false;
+      }
+      
+      return true;
+    } catch {
+      // Failed to parse token - clear invalid session
+      this.clearSession();
+      return false;
+    }
+  }
+
+  /**
+   * Check if token is valid (legacy method for compatibility)
    */
   isTokenValid(): boolean {
-    const token = this._token();
-    return !!token;
+    return this.hasValidToken();
   }
 
   /**

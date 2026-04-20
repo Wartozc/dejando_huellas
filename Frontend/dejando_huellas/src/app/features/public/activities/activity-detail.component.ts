@@ -1,14 +1,14 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { PublicationsService } from '../../../core/services';
-import { SpinnerComponent } from '../../../shared/components';
+import { SpinnerComponent, ActivityModalComponent } from '../../../shared/components';
 import { Post } from '../../../core/models';
 
 @Component({
   selector: 'app-activity-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, SpinnerComponent],
+  imports: [CommonModule, RouterModule, SpinnerComponent, ActivityModalComponent],
   template: `
     <div class="detail-page">
       @if (isLoading()) {
@@ -49,6 +49,15 @@ import { Post } from '../../../core/models';
         </article>
       }
     </div>
+
+    <!-- Activity Detail Modal -->
+    @if (post()) {
+      <app-activity-modal
+        [isOpen]="true"
+        [post]="post()"
+        (close)="goBack()"
+      ></app-activity-modal>
+    }
   `,
   styles: [`
     .detail-page {
@@ -186,6 +195,7 @@ import { Post } from '../../../core/models';
 export class ActivityDetailComponent implements OnInit {
   private publicationsService = inject(PublicationsService);
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
   
   post = signal<Post | null>(null);
   isLoading = signal(true);
@@ -224,5 +234,9 @@ export class ActivityDetailComponent implements OnInit {
       month: 'long',
       day: 'numeric'
     });
+  }
+
+  goBack(): void {
+    this.router.navigate(['/actividades']);
   }
 }

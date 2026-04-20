@@ -59,6 +59,12 @@ func (h *PostHandler) Create(c *gin.Context) {
 	req.AuthorID = userID
 	req.AuthorName = userName
 
+	// Get community from JWT claims if not provided in request
+	if req.Community == "" {
+		req.Community = GetCommunityFromClaims(c)
+		log.Printf("Create: Using community from JWT claims: %s", req.Community)
+	}
+
 	post, err := h.uc.Create(c.Request.Context(), &req, userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create post"})
@@ -93,8 +99,15 @@ func (h *PostHandler) CreateWithImages(c *gin.Context) {
 	// Get the text fields
 	title := c.PostForm("title")
 	content := c.PostForm("content")
+	community := c.PostForm("community")
 
-	log.Printf("CreateWithImages: title=%s, content length=%d", title, len(content))
+	// Use community from JWT claims if not provided in form
+	if community == "" {
+		community = GetCommunityFromClaims(c)
+		log.Printf("CreateWithImages: Using community from JWT claims: %s", community)
+	}
+
+	log.Printf("CreateWithImages: title=%s, content length=%d, community=%s", title, len(content), community)
 
 	if title == "" || content == "" {
 		log.Println("CreateWithImages: Missing title or content")
@@ -180,6 +193,7 @@ func (h *PostHandler) CreateWithImages(c *gin.Context) {
 	req := &domain.CreatePostRequest{
 		Title:      title,
 		Content:    content,
+		Community:  community,
 		AuthorID:   userID,
 		AuthorName: GetUserNameFromClaims(c),
 	}

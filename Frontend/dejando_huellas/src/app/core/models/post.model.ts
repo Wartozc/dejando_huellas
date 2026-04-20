@@ -10,6 +10,7 @@ export interface Post {
   created_by?: string;
   author_id?: string;
   author_name?: string;
+  community?: string;
   creator?: {
     id: string;
     name: string;
@@ -25,12 +26,14 @@ export interface PostCreateDto {
   image_url?: string[];
   author_id?: string;
   author_name?: string;
+  community?: string;
 }
 
 export interface PostUpdateDto {
   title?: string;
   content?: string;
   image_url?: string[];
+  community?: string;
 }
 
 /**

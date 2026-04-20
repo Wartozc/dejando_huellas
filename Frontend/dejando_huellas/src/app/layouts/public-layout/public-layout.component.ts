@@ -4,11 +4,12 @@ import { RouterModule } from '@angular/router';
 import { AuthService } from '../../core/services';
 import { WhatsAppButtonComponent } from '../../shared/components';
 import { ToastContainerComponent } from '../../shared/components';
+import { ChatBotComponent } from '../../features/public/chatbot/chatbot.component';
 
 @Component({
   selector: 'app-public-layout',
   standalone: true,
-  imports: [CommonModule, RouterModule, WhatsAppButtonComponent, ToastContainerComponent],
+  imports: [CommonModule, RouterModule, WhatsAppButtonComponent, ToastContainerComponent, ChatBotComponent],
   template: `
     <div class="layout">
       <!-- Navbar -->
@@ -64,6 +65,9 @@ import { ToastContainerComponent } from '../../shared/components';
                 }
               </div>
             } @else {
+              <a routerLink="/register" class="nav-link register-btn">
+                Registrarse
+              </a>
               <a routerLink="/login" class="nav-link login-btn">
                 Iniciar Sesión
               </a>
@@ -114,6 +118,9 @@ import { ToastContainerComponent } from '../../shared/components';
       
       <!-- WhatsApp Button -->
       <app-whatsapp-button></app-whatsapp-button>
+      
+      <!-- ChatBot -->
+      <app-chatbot></app-chatbot>
       
       <!-- Toast Notifications -->
       <app-toast-container></app-toast-container>
@@ -240,6 +247,15 @@ import { ToastContainerComponent } from '../../shared/components';
       &:hover {
         color: #2E7D32;
         background: rgba(27, 94, 32, 0.08);
+      }
+    }
+    
+    .register-btn {
+      background: #4CAF50;
+      color: white !important;
+      
+      &:hover {
+        background: #43A047;
       }
     }
     

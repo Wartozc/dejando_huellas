@@ -27,7 +27,7 @@ func NewUserRepository(ctx context.Context, mongoURI, dbName string) *UserReposi
 	collection := client.Database(dbName).Collection("users")
 	return &UserRepository{
 		collection: collection,
-		client:    client,
+		client:     client,
 	}
 }
 
@@ -107,6 +107,7 @@ func (r *UserRepository) Update(ctx context.Context, id primitive.ObjectID, user
 			"phone":      user.Phone,
 			"role":       user.Role,
 			"status":     user.Status,
+			"community":  user.Community,
 			"updated_at": user.UpdatedAt,
 		},
 	}

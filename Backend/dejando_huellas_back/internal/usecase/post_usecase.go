@@ -52,6 +52,14 @@ func (uc *PostUseCase) Create(ctx context.Context, req *domain.CreatePostRequest
 		authorObjID = userObjID
 	}
 
+	// Use community from request, or default to user's community if available
+	community := req.Community
+	if community == "" {
+		// Try to get community from user if available in context
+		// The community will be empty if not provided in request
+		log.Printf("Community not provided in request, using empty string")
+	}
+
 	post := &domain.Post{
 		Title:      req.Title,
 		Content:    req.Content,
@@ -59,6 +67,7 @@ func (uc *PostUseCase) Create(ctx context.Context, req *domain.CreatePostRequest
 		CreatedBy:  userObjID,
 		AuthorID:   authorObjID,
 		AuthorName: req.AuthorName,
+		Community:  community,
 	}
 
 	if err := uc.repo.Create(ctx, post); err != nil {
@@ -91,6 +100,10 @@ func (uc *PostUseCase) CreateWithImages(ctx context.Context, req *domain.CreateP
 		authorObjID = userObjID
 	}
 
+	// Use community from request
+	community := req.Community
+	log.Printf("CreateWithImages: community from request = %q", community)
+
 	post := &domain.Post{
 		Title:      req.Title,
 		Content:    req.Content,
@@ -98,6 +111,7 @@ func (uc *PostUseCase) CreateWithImages(ctx context.Context, req *domain.CreateP
 		CreatedBy:  userObjID,
 		AuthorID:   authorObjID,
 		AuthorName: req.AuthorName,
+		Community:  community,
 	}
 
 	log.Printf("Post struct created: Title=%s, ImageURLs=%v", post.Title, post.ImageURL)

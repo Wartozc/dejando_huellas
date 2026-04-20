@@ -1,8 +1,9 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { MembersService, ToastService } from '../../../core/services';
+import { MembersService, CommunitiesService, ToastService } from '../../../core/services';
 import { User, UserRole, UserStatus } from '../../../core/models';
+import { Community } from '../../../core/models';
 import { ButtonComponent, SpinnerComponent, ConfirmDialogComponent } from '../../../shared/components';
 
 @Component({
@@ -147,6 +148,15 @@ import { ButtonComponent, SpinnerComponent, ConfirmDialogComponent } from '../..
               <div class="form-group">
                 <label for="phone">Teléfono</label>
                 <input type="tel" id="phone" [(ngModel)]="formData.phone" name="phone" />
+              </div>
+              <div class="form-group">
+                <label for="community">Comunidad *</label>
+                <select id="community" [(ngModel)]="formData.community" name="community" required>
+                  <option value="">Por favor seleccione la comunidad a la que pertenece</option>
+                  @for (community of communities(); track community.id) {
+                    <option [value]="community.name">{{ community.name }}</option>
+                  }
+                </select>
               </div>
               <div class="form-row">
                 <div class="form-group">
@@ -501,10 +511,12 @@ import { ButtonComponent, SpinnerComponent, ConfirmDialogComponent } from '../..
 })
 export class AdminMembersComponent implements OnInit {
   private membersService = inject(MembersService);
+  private communitiesService = inject(CommunitiesService);
   private toastService = inject(ToastService);
   
   members = signal<User[]>([]);
   filteredMembers = signal<User[]>([]);
+  communities = signal<Community[]>([]);
   isLoading = signal(true);
   isSaving = signal(false);
   showForm = signal(false);
@@ -520,6 +532,7 @@ export class AdminMembersComponent implements OnInit {
     name: '',
     email: '',
     phone: '',
+    community: '',
     role: 'MEMBER' as UserRole,
     status: 'PENDING' as UserStatus,
     password: ''
@@ -527,6 +540,18 @@ export class AdminMembersComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadMembers();
+    this.loadCommunities();
+  }
+
+  loadCommunities(): void {
+    this.communitiesService.getAllCommunities().subscribe({
+      next: (response) => {
+        this.communities.set(response.communities);
+      },
+      error: () => {
+        this.toastService.error('Error al cargar las comunidades');
+      }
+    });
   }
 
   loadMembers(): void {
@@ -573,16 +598,30 @@ export class AdminMembersComponent implements OnInit {
         name: member.name,
         email: member.email,
         phone: member.phone || '',
+        community: '',
         role: member.role,
         status: member.status,
         password: ''
       };
+      // Set community explicitly when editing to ensure dropdown shows user's current community
+      let communityValue = member.community || '';
+      // If community looks like a MongoDB ID (24 hex chars), try to find the name
+      if (communityValue && communityValue.length === 24 && /^[a-f0-9]+$/i.test(communityValue)) {
+        const found = this.communities().find(c => c.id === communityValue);
+        if (found) {
+          communityValue = found.name;
+        } else {
+          communityValue = ''; // Clear invalid ID
+        }
+      }
+      this.formData.community = communityValue;
     } else {
       this.editingMember.set(null);
       this.formData = {
         name: '',
         email: '',
         phone: '',
+        community: '',
         role: 'MEMBER',
         status: 'PENDING',
         password: ''
@@ -601,7 +640,7 @@ export class AdminMembersComponent implements OnInit {
   }
 
   saveMember(): void {
-    if (!this.formData.name || !this.formData.email) {
+    if (!this.formData.name || !this.formData.email || !this.formData.community) {
       this.toastService.warning('Complete los campos requeridos');
       return;
     }
@@ -615,7 +654,8 @@ export class AdminMembersComponent implements OnInit {
         email: this.formData.email,
         phone: this.formData.phone || undefined,
         role: this.formData.role,
-        status: this.formData.status
+        status: this.formData.status,
+        community: this.formData.community || undefined
       }).subscribe({
         next: (response) => {
           this.toastService.success('Miembro actualizado correctamente');
@@ -638,7 +678,8 @@ export class AdminMembersComponent implements OnInit {
         name: this.formData.name,
         email: this.formData.email,
         phone: this.formData.phone || undefined,
-        password: this.formData.password
+        password: this.formData.password,
+        community: this.formData.community || undefined
       }).subscribe({
         next: (response) => {
           this.toastService.success('Miembro creado correctamente');

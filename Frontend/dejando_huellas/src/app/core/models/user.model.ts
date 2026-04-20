@@ -9,6 +9,7 @@ export interface User {
   phone?: string;
   role: UserRole;
   status: UserStatus;
+  community?: string;
   created_at?: string;
   updated_at?: string;
 }
@@ -25,6 +26,7 @@ export interface UserCreateDto {
   phone?: string;
   password: string;
   role?: UserRole;
+  community?: string;
 }
 
 export interface UserUpdateDto {
@@ -33,6 +35,7 @@ export interface UserUpdateDto {
   phone?: string;
   role?: UserRole;
   status?: UserStatus;
+  community?: string;
 }
 
 /**

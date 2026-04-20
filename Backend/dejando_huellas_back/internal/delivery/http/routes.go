@@ -16,6 +16,9 @@ func SetupRoutes(
 	postHandler *PostHandler,
 	contactHandler *ContactHandler,
 	messageHandler *MessageHandler,
+	communityHandler *CommunityHandler,
+	habeasDataHandler *HabeasDataHandler,
+	chatBotHandler *ChatBotHandler,
 	authMw *middleware.AuthMiddleware,
 	roleMw *middleware.RoleMiddleware,
 ) {
@@ -106,6 +109,45 @@ func SetupRoutes(
 			messages.DELETE("/:id", authMw.Authenticate(), roleMw.RequireMember(), messageHandler.Delete)
 			// Add reaction to a message (any authenticated member)
 			messages.POST("/:id/reactions", authMw.Authenticate(), roleMw.RequireMember(), messageHandler.AddReaction)
+		}
+
+		// Communities (Public GET, Admin CRUD)
+		communities := api.Group("/communities")
+		{
+			// List all communities (public - no auth required)
+			communities.GET("", communityHandler.GetAll)
+			// Get community by ID (public)
+			communities.GET("/:id", communityHandler.GetByID)
+			// Create community (admin only)
+			communities.POST("", authMw.Authenticate(), roleMw.RequireAdmin(), communityHandler.Create)
+			// Update community (admin only)
+			communities.PUT("/:id", authMw.Authenticate(), roleMw.RequireAdmin(), communityHandler.Update)
+			// Delete community (admin only)
+			communities.DELETE("/:id", authMw.Authenticate(), roleMw.RequireAdmin(), communityHandler.Delete)
+		}
+
+		// Habeas Data (Public GET, Admin PUT)
+		habeasData := api.Group("/habeas-data")
+		{
+			// Get habeas data (public)
+			habeasData.GET("", habeasDataHandler.Get)
+			// Update habeas data (admin only)
+			habeasData.PUT("", authMw.Authenticate(), roleMw.RequireAdmin(), habeasDataHandler.Update)
+		}
+
+		// ChatBot (Public GET, Admin CRUD)
+		chatbot := api.Group("/chatbot")
+		{
+			// Get all chatbot options as tree (public)
+			chatbot.GET("", chatBotHandler.GetAll)
+			// Get chatbot option by ID (public)
+			chatbot.GET("/:id", chatBotHandler.GetByID)
+			// Create chatbot option (admin only)
+			chatbot.POST("", authMw.Authenticate(), roleMw.RequireAdmin(), chatBotHandler.Create)
+			// Update chatbot option (admin only)
+			chatbot.PUT("/:id", authMw.Authenticate(), roleMw.RequireAdmin(), chatBotHandler.Update)
+			// Delete chatbot option (admin only)
+			chatbot.DELETE("/:id", authMw.Authenticate(), roleMw.RequireAdmin(), chatBotHandler.Delete)
 		}
 	}
 }

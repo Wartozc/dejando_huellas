@@ -6,8 +6,11 @@ export const publicGuard: CanActivateFn = (route, state) => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
-  // If already authenticated, redirect based on role
-  if (authService.isAuthenticated()) {
+  // Check if user has a valid token stored
+  const hasValidToken = authService.hasValidToken();
+
+  // Only redirect if user has a valid authenticated session
+  if (hasValidToken) {
     if (authService.isAdmin()) {
       router.navigate(['/admin/dashboard']);
     } else {
@@ -16,5 +19,6 @@ export const publicGuard: CanActivateFn = (route, state) => {
     return false;
   }
 
+  // No valid token - allow access to public route (register, login, etc.)
   return true;
 };

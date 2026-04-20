@@ -29,24 +29,27 @@ type User struct {
 	Password  string             `bson:"password" json:"-"`
 	Role      Role               `bson:"role" json:"role"`
 	Status    UserStatus         `bson:"status" json:"status"`
+	Community string             `bson:"community" json:"community"`
 	CreatedAt time.Time          `bson:"created_at" json:"created_at"`
 	UpdatedAt time.Time          `bson:"updated_at" json:"updated_at"`
 }
 
 type CreateUserRequest struct {
-	Name     string `json:"name" binding:"required,min=2,max=100"`
-	Email    string `json:"email" binding:"required,email"`
-	Phone    string `json:"phone"`
-	Password string `json:"password" binding:"required,min=6"`
-	Role     Role   `json:"role"`
+	Name      string `json:"name" binding:"required,min=2,max=100"`
+	Email     string `json:"email" binding:"required,email"`
+	Phone     string `json:"phone"`
+	Password  string `json:"password" binding:"required,min=6"`
+	Role      Role   `json:"role"`
+	Community string `json:"community"`
 }
 
 type UpdateUserRequest struct {
-	Name   string `json:"name" binding:"omitempty,min=2,max=100"`
-	Email  string `json:"email" binding:"omitempty,email"`
-	Phone  string `json:"phone"`
-	Status string `json:"status"`
-	Role   Role   `json:"role"`
+	Name      string `json:"name" binding:"omitempty,min=2,max=100"`
+	Email     string `json:"email" binding:"omitempty,email"`
+	Phone     string `json:"phone"`
+	Status    string `json:"status"`
+	Role      Role   `json:"role"`
+	Community string `json:"community"`
 }
 
 type LoginRequest struct {

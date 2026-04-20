@@ -31,6 +31,9 @@ func main() {
 	postRepo := repository.NewPostRepository(ctx, cfg.MongoURI, cfg.Database)
 	contactRepo := repository.NewContactRepository(ctx, cfg.MongoURI, cfg.Database)
 	messageRepo := repository.NewMessageRepository(ctx, cfg.MongoURI, cfg.Database)
+	communityRepo := repository.NewCommunityRepository(ctx, cfg.MongoURI, cfg.Database)
+	habeasDataRepo := repository.NewHabeasDataRepository(ctx, cfg.MongoURI, cfg.Database)
+	chatBotRepo := repository.NewChatBotRepository(ctx, cfg.MongoURI, cfg.Database)
 
 	if err := userRepo.EnsureIndexes(); err != nil {
 		log.Printf("Warning: Failed to create indexes: %v", err)
@@ -40,6 +43,15 @@ func main() {
 	}
 	if err := messageRepo.EnsureIndexes(); err != nil {
 		log.Printf("Warning: Failed to create message indexes: %v", err)
+	}
+	if err := communityRepo.EnsureIndexes(); err != nil {
+		log.Printf("Warning: Failed to create community indexes: %v", err)
+	}
+	if err := habeasDataRepo.EnsureIndexes(); err != nil {
+		log.Printf("Warning: Failed to create habeas data indexes: %v", err)
+	}
+	if err := chatBotRepo.EnsureIndexes(); err != nil {
+		log.Printf("Warning: Failed to create chatbot indexes: %v", err)
 	}
 
 	// Initialize default admin user
@@ -56,6 +68,9 @@ func main() {
 	postUC := usecase.NewPostUseCase(postRepo)
 	contactUC := usecase.NewContactUseCase(contactRepo)
 	messageUC := usecase.NewMessageUseCase(messageRepo, userRepo)
+	communityUC := usecase.NewCommunityUseCase(communityRepo)
+	habeasDataUC := usecase.NewHabeasDataUseCase(habeasDataRepo)
+	chatBotUC := usecase.NewChatBotUseCase(chatBotRepo)
 
 	// Initialize image uploader if GitHub token is configured
 	var postHandler *httpdelivery.PostHandler
@@ -82,6 +97,9 @@ func main() {
 	authHandler := httpdelivery.NewAuthHandler(authUC)
 	contactHandler := httpdelivery.NewContactHandler(contactUC)
 	messageHandler := httpdelivery.NewMessageHandler(messageUC)
+	communityHandler := httpdelivery.NewCommunityHandler(communityUC)
+	habeasDataHandler := httpdelivery.NewHabeasDataHandler(habeasDataUC)
+	chatBotHandler := httpdelivery.NewChatBotHandler(chatBotUC)
 
 	router := gin.Default()
 	router.Use(middleware.CORS())
@@ -89,7 +107,7 @@ func main() {
 	authMw := middleware.NewAuthMiddleware(cfg.JWTSecret)
 	roleMw := middleware.NewRoleMiddleware()
 
-	httpdelivery.SetupRoutes(cfg, router, authHandler, userHandler, postHandler, contactHandler, messageHandler, authMw, roleMw)
+	httpdelivery.SetupRoutes(cfg, router, authHandler, userHandler, postHandler, contactHandler, messageHandler, communityHandler, habeasDataHandler, chatBotHandler, authMw, roleMw)
 
 	srv := &http.Server{
 		Addr:    ":" + cfg.Port,

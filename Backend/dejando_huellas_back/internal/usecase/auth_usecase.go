@@ -24,10 +24,11 @@ type AuthUseCase struct {
 }
 
 type JWTClaims struct {
-	UserID string      `json:"user_id"`
-	Name   string      `json:"name"`
-	Email  string      `json:"email"`
-	Role   domain.Role `json:"role"`
+	UserID    string      `json:"user_id"`
+	Name      string      `json:"name"`
+	Email     string      `json:"email"`
+	Role      domain.Role `json:"role"`
+	Community string      `json:"community"`
 	jwt.RegisteredClaims
 }
 
@@ -70,10 +71,11 @@ func (uc *AuthUseCase) Login(ctx context.Context, req *domain.LoginRequest) (*do
 
 func (uc *AuthUseCase) generateToken(user *domain.User) (string, error) {
 	claims := &JWTClaims{
-		UserID: user.ID.Hex(),
-		Name:   user.Name,
-		Email:  user.Email,
-		Role:   user.Role,
+		UserID:    user.ID.Hex(),
+		Name:      user.Name,
+		Email:     user.Email,
+		Role:      user.Role,
+		Community: user.Community,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),

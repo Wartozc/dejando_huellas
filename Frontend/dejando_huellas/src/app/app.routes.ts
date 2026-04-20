@@ -22,9 +22,12 @@ import { ChatComponent } from './features/chat/chat.component';
 // Admin
 import { AdminDashboardComponent } from './features/admin/dashboard/admin-dashboard.component';
 import { AdminMembersComponent } from './features/admin/members/admin-members.component';
+import { AdminCommunitiesComponent } from './features/admin/communities/admin-communities.component';
 import { AdminPublicationsComponent } from './features/admin/publications/admin-publications.component';
 import { AdminContactComponent } from './features/admin/contact/admin-contact.component';
+import { AdminHabeasDataComponent } from './features/admin/habeas-data/admin-habeas-data.component';
 import { AdminReportComponent } from './features/admin/report/admin-report.component';
+import { AdminChatBotComponent } from './features/admin/chatbot/admin-chatbot.component';
 
 export const routes: Routes = [
   // Public Layout Routes
@@ -49,8 +52,7 @@ export const routes: Routes = [
   },
   {
     path: 'register',
-    component: RegisterComponent,
-    canActivate: [publicGuard]
+    component: RegisterComponent
   },
   
   // Admin Layout Routes
@@ -62,8 +64,11 @@ export const routes: Routes = [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', component: AdminDashboardComponent },
       { path: 'members', component: AdminMembersComponent },
+      { path: 'communities', component: AdminCommunitiesComponent },
       { path: 'publications', component: AdminPublicationsComponent },
       { path: 'contact', component: AdminContactComponent },
+      { path: 'habeas-data', component: AdminHabeasDataComponent },
+      { path: 'chatbot', component: AdminChatBotComponent },
       { path: 'report', component: AdminReportComponent },
     ]
   },

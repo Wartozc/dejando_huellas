@@ -5,11 +5,12 @@ import { SpinnerComponent } from '../../../shared/components';
 import * as XLSX from 'xlsx';
 
 interface ReportData {
-  title: string;
-  images: string;
-  description: string;
-  date: string;
-  author: string;
+  'Título': string;
+  'Imágenes': string;
+  'Descripción': string;
+  'Fecha': string;
+  'Autor': string;
+  'Comunidad': string;
 }
 
 @Component({
@@ -45,6 +46,7 @@ interface ReportData {
             <li><strong>Descripción:</strong> Contenido completo de la publicación</li>
             <li><strong>Fecha:</strong> Fecha de creación</li>
             <li><strong>Autor:</strong> Nombre del creador</li>
+            <li><strong>Comunidad:</strong> Comunidad a la que pertenece el autor</li>
           </ul>
           
           @if (years().length > 0) {
@@ -479,11 +481,12 @@ export class AdminReportComponent implements OnInit {
           
           // Transform data for Excel
           const reportData: ReportData[] = posts.map(post => ({
-            title: post.title,
-            description: post.content || 'Sin descripción',
-            date: new Date(post.created_at).toLocaleDateString('es-CO'),
-            author: post.author_name || 'Desconocido',
-            images: post.image_url?.join(', ') || 'Sin imágenes'
+            'Título': post.title,
+            'Descripción': post.content || 'Sin descripción',
+            'Fecha': new Date(post.created_at).toLocaleDateString('es-CO'),
+            'Autor': post.author_name || 'Desconocido',
+            'Comunidad': post.community || 'Sin comunidad',
+            'Imágenes': post.image_url?.join(', ') || 'Sin imágenes'
           }));
 
           // Create worksheet from the data
@@ -495,6 +498,7 @@ export class AdminReportComponent implements OnInit {
             { wch: 80 },  // Descripción
             { wch: 15 },  // Fecha
             { wch: 25 },  // Autor
+            { wch: 25 },  // Comunidad
             { wch: 60 }   // Imágenes
           ];
 

@@ -39,12 +39,13 @@ func (uc *UserUseCase) Create(ctx context.Context, req *domain.CreateUserRequest
 	}
 
 	user := &domain.User{
-		Name:     req.Name,
-		Email:    req.Email,
-		Phone:    req.Phone,
-		Password: string(hashedPassword),
-		Role:     role,
-		Status:   domain.StatusPending,
+		Name:      req.Name,
+		Email:     req.Email,
+		Phone:     req.Phone,
+		Password:  string(hashedPassword),
+		Role:      role,
+		Status:    domain.StatusPending,
+		Community: req.Community,
 	}
 
 	if err := uc.repo.Create(ctx, user); err != nil {
@@ -97,6 +98,9 @@ func (uc *UserUseCase) Update(ctx context.Context, id string, req *domain.Update
 	}
 	if req.Status != "" {
 		user.Status = domain.UserStatus(req.Status)
+	}
+	if req.Community != "" {
+		user.Community = req.Community
 	}
 	user.UpdatedAt = time.Now()
 

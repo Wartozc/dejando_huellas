@@ -2,13 +2,13 @@ import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { PublicationsService } from '../../../core/services';
-import { CardComponent, SpinnerComponent } from '../../../shared/components';
+import { CardComponent, SpinnerComponent, ActivityModalComponent } from '../../../shared/components';
 import { Post } from '../../../core/models';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, RouterModule, CardComponent, SpinnerComponent],
+  imports: [CommonModule, RouterModule, CardComponent, SpinnerComponent, ActivityModalComponent],
   template: `
     <div class="home-page">
       <!-- Hero Section -->
@@ -118,6 +118,13 @@ import { Post } from '../../../core/models';
           <a routerLink="/contacto" class="btn-primary">Contáctanos</a>
         </div>
       </section>
+
+      <!-- Activity Detail Modal -->
+      <app-activity-modal
+        [isOpen]="isModalOpen()"
+        [post]="selectedPost()"
+        (close)="closeModal()"
+      ></app-activity-modal>
     </div>
   `,
   styles: [`
@@ -394,7 +401,26 @@ export class HomeComponent implements OnInit {
     return content.substring(0, maxLength) + '...';
   }
 
+  // Modal state
+  isModalOpen = signal(false);
+  selectedPost = signal<Post | null>(null);
+
+  openModal(post: Post): void {
+    this.selectedPost.set(post);
+    this.isModalOpen.set(true);
+    document.body.style.overflow = 'hidden';
+  }
+
+  closeModal(): void {
+    this.isModalOpen.set(false);
+    this.selectedPost.set(null);
+    document.body.style.overflow = '';
+  }
+
   viewPost(id: string): void {
-    window.location.href = `/actividades/${id}`;
+    const post = this.recentPosts().find(p => p.id === id);
+    if (post) {
+      this.openModal(post);
+    }
   }
 }

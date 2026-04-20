@@ -172,6 +172,11 @@ func (r *PostRepository) GetAll(ctx context.Context) ([]*domain.Post, error) {
 			post.AuthorName = authorName
 		}
 
+		// Handle community
+		if community, ok := rawDoc["community"].(string); ok {
+			post.Community = community
+		}
+
 		// Handle dates
 		if createdAt, ok := rawDoc["created_at"]; ok {
 			if t, ok := createdAt.(primitive.DateTime); ok {
@@ -206,6 +211,7 @@ func (r *PostRepository) Update(ctx context.Context, id primitive.ObjectID, post
 			"title":      post.Title,
 			"content":    post.Content,
 			"image_url":  post.ImageURL,
+			"community":  post.Community,
 			"updated_at": post.UpdatedAt,
 		},
 	}

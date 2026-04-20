@@ -1,6 +1,7 @@
 package http
 
 import (
+	"log"
 	"net/http"
 	"strings"
 
@@ -143,6 +144,8 @@ func (h *UserHandler) RegisterMember(c *gin.Context) {
 		return
 	}
 
+	log.Println("RegisterMember: received community:", req.Community)
+
 	req.Role = domain.RoleMember
 
 	user, err := h.uc.Create(c.Request.Context(), &req)
@@ -178,6 +181,13 @@ func GetUserNameFromClaims(c *gin.Context) string {
 func GetRoleFromClaims(c *gin.Context) string {
 	if role, exists := c.Get("role"); exists {
 		return strings.ToUpper(role.(string))
+	}
+	return ""
+}
+
+func GetCommunityFromClaims(c *gin.Context) string {
+	if community, exists := c.Get("community"); exists {
+		return community.(string)
 	}
 	return ""
 }
