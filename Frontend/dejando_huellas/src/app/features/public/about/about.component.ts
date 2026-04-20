@@ -155,6 +155,7 @@ import { RouterModule } from '@angular/router';
       h1 {
         font-size: clamp(2rem, 5vw, 3rem);
         margin: 0 0 1rem;
+        color: white;
       }
       
       p {
@@ -310,6 +311,7 @@ import { RouterModule } from '@angular/router';
       h2 {
         font-size: 2rem;
         margin: 0 0 1rem;
+        color: white;
       }
       
       p {

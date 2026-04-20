@@ -110,6 +110,11 @@ import { ButtonComponent } from '../../../shared/components';
       border-radius: 16px;
       padding: 2.5rem;
       box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+      
+      @media (max-width: 480px) {
+        padding: 1.5rem;
+        border-radius: 12px;
+      }
     }
     
     .login-header {

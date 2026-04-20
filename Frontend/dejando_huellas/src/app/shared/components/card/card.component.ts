@@ -108,6 +108,49 @@ import { CommonModule } from '@angular/common';
       flex-shrink: 0;
       margin-top: auto;
     }
+    
+    /* Responsive for Tablet - 481px to 768px */
+    @media (min-width: 481px) and (max-width: 768px) {
+      .card-image {
+        height: 180px;
+      }
+      
+      .card-header {
+        padding: 1rem 1rem 0.375rem;
+      }
+      
+      .card-title {
+        font-size: 1.125rem;
+      }
+      
+      .card-content {
+        padding: 0.75rem 1rem 1rem;
+      }
+    }
+    
+    /* Responsive for Mobile - max-width: 480px */
+    @media (max-width: 480px) {
+      .card-image {
+        height: 160px;
+      }
+      
+      .card-header {
+        padding: 1rem 1rem 0.375rem;
+      }
+      
+      .card-title {
+        font-size: 1.0625rem;
+      }
+      
+      .card-subtitle {
+        font-size: 0.8125rem;
+      }
+      
+      .card-content {
+        padding: 0.625rem 1rem 1rem;
+        font-size: 0.9375rem;
+      }
+    }
   `]
 })
 export class CardComponent {

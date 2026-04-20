@@ -27,7 +27,7 @@ import { ChatBotTreeNode } from '../../../core/models';
     
     <!-- Chat Panel -->
     @if (isOpen()) {
-      <div class="chatbot-panel">
+      <div class="chatbot-panel chatbot-mobile">
         <div class="chatbot-header">
           <div class="header-content">
             <svg viewBox="0 0 24 24" fill="currentColor">
@@ -35,6 +35,11 @@ import { ChatBotTreeNode } from '../../../core/models';
             </svg>
             <span>Asistente Virtual</span>
           </div>
+          <button class="header-close-btn" (click)="close()" aria-label="Cerrar chat">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 6L6 18M6 6l12 12" />
+            </svg>
+          </button>
         </div>
         
         <div class="chatbot-content">
@@ -91,7 +96,14 @@ import { ChatBotTreeNode } from '../../../core/models';
     }
   `,
   styles: [`
-    /* Floating Button */
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
     .chatbot-float-btn {
       position: fixed;
       bottom: 24px;
@@ -109,19 +121,16 @@ import { ChatBotTreeNode } from '../../../core/models';
       box-shadow: 0 4px 12px rgba(27, 94, 32, 0.4);
       z-index: 1000;
       transition: all 0.3s ease;
-      
-      svg {
-        width: 28px;
-        height: 28px;
-      }
-      
-      &:hover {
-        transform: scale(1.1);
-        box-shadow: 0 6px 16px rgba(27, 94, 32, 0.5);
-      }
+    }
+    .chatbot-float-btn svg {
+      width: 28px;
+      height: 28px;
+    }
+    .chatbot-float-btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 16px rgba(27, 94, 32, 0.5);
     }
     
-    /* Chat Panel */
     .chatbot-panel {
       position: fixed;
       bottom: 90px;
@@ -140,39 +149,48 @@ import { ChatBotTreeNode } from '../../../core/models';
       animation: slideUp 0.3s ease;
     }
     
-    @keyframes slideUp {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-    
     .chatbot-header {
       background: #1B5E20;
       color: white;
       padding: 1rem;
       display: flex;
       align-items: center;
+      justify-content: space-between;
     }
-    
-    .header-content {
+    .chatbot-header .header-content {
       display: flex;
       align-items: center;
       gap: 0.75rem;
-      
-      svg {
-        width: 24px;
-        height: 24px;
-      }
-      
-      span {
-        font-weight: 600;
-        font-size: 1rem;
-      }
+    }
+    .chatbot-header .header-content svg {
+      width: 24px;
+      height: 24px;
+    }
+    .chatbot-header span {
+      font-weight: 600;
+      font-size: 1rem;
+    }
+    
+    .chatbot-header .header-close-btn {
+      display: flex;
+      width: 32px;
+      height: 32px;
+      border: none;
+      background: transparent;
+      color: white;
+      cursor: pointer;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: background 0.2s ease;
+      flex-shrink: 0;
+    }
+    .chatbot-header .header-close-btn svg {
+      width: 24px;
+      height: 24px;
+    }
+    .chatbot-header .header-close-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
     }
     
     .chatbot-content {
@@ -189,19 +207,14 @@ import { ChatBotTreeNode } from '../../../core/models';
       height: 200px;
       gap: 1rem;
       color: #757575;
-      
-      .spinner {
-        width: 32px;
-        height: 32px;
-        border: 3px solid #E0E0E0;
-        border-top-color: #1B5E20;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-      }
     }
-    
-    @keyframes spin {
-      to { transform: rotate(360deg); }
+    .loading .spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid #E0E0E0;
+      border-top-color: #1B5E20;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
     }
     
     .error {
@@ -231,11 +244,10 @@ import { ChatBotTreeNode } from '../../../core/models';
       font-size: 0.9375rem;
       color: #424242;
       transition: all 0.2s ease;
-      
-      &:hover {
-        background: #E8F5E9;
-        color: #1B5E20;
-      }
+    }
+    .option-btn:hover {
+      background: #E8F5E9;
+      color: #1B5E20;
     }
     
     .no-options {
@@ -244,7 +256,6 @@ import { ChatBotTreeNode } from '../../../core/models';
       padding: 2rem 1rem;
     }
     
-    /* Answer View */
     .answer-view {
       display: flex;
       flex-direction: column;
@@ -262,28 +273,25 @@ import { ChatBotTreeNode } from '../../../core/models';
       cursor: pointer;
       padding: 0;
       font-size: 0.875rem;
-      
-      svg {
-        width: 18px;
-        height: 18px;
-      }
-      
-      &:hover {
-        text-decoration: underline;
-      }
+    }
+    .back-btn svg {
+      width: 18px;
+      height: 18px;
+    }
+    .back-btn:hover {
+      text-decoration: underline;
     }
     
     .answer-content {
       background: #F5F5F5;
       padding: 1rem;
       border-radius: 8px;
-      
-      p {
-        margin: 0;
-        color: #424242;
-        line-height: 1.6;
-        white-space: pre-wrap;
-      }
+    }
+    .answer-content p {
+      margin: 0;
+      color: #424242;
+      line-height: 1.6;
+      white-space: pre-wrap;
     }
     
     .sub-options {
@@ -292,18 +300,57 @@ import { ChatBotTreeNode } from '../../../core/models';
       gap: 0.5rem;
     }
     
-    /* Responsive */
+    @media (max-width: 768px) {
+      .chatbot-panel.chatbot-mobile {
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: 100%;
+        height: 100%;
+        max-width: 100%;
+        max-height: 100%;
+        border-radius: 0;
+        z-index: 9999;
+      }
+      .chatbot-header .header-close-btn {
+        display: flex;
+      }
+    }
+    
     @media (max-width: 480px) {
       .chatbot-float-btn {
-        bottom: 16px;
-        right: 16px;
-      }
-      
-      .chatbot-panel {
         bottom: 80px;
         right: 16px;
-        left: 16px;
-        width: auto;
+      }
+      .chatbot-panel {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: 100vw;
+        height: 100vh;
+        max-height: 100vh;
+        border-radius: 0;
+        z-index: 9999;
+        transform: none;
+      }
+      .chatbot-header {
+        padding: 1rem;
+        justify-content: space-between;
+      }
+    }
+    
+    @media (min-width: 481px) and (max-width: 768px) {
+      .chatbot-float-btn {
+        bottom: 80px;
+        right: 24px;
+      }
+      .chatbot-panel {
+        bottom: 144px;
+        right: 24px;
+        width: 340px;
       }
     }
   `]
@@ -371,6 +418,11 @@ export class ChatBotComponent implements OnInit {
     }
   }
 
+  close(): void {
+    this.isOpen.set(false);
+    this.closed.emit();
+  }
+
   selectOption(option: ChatBotTreeNode): void {
     this.currentOption.set(option);
     this.currentAnswer.set(option.answer);
@@ -395,6 +447,10 @@ export class ChatBotComponent implements OnInit {
   private resetView(): void {
     this.currentOption.set(null);
     this.currentAnswer.set(null);
+  }
+
+  isMobile(): boolean {
+    return window.innerWidth <= 768;
   }
 
   private findOptionById(id: string): ChatBotTreeNode | null {

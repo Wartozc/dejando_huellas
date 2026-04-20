@@ -28,15 +28,19 @@ import { Post } from '../../../core/models';
                   </div>
                 } @else {
                   <div class="carousel">
-                    <div class="carousel-main">
+                    <div 
+                      class="carousel-main" 
+                      (touchstart)="onTouchStart($event)" 
+                      (touchend)="onTouchEnd($event)"
+                    >
                       <img [src]="post?.image_url![currentImageIndex()]" [alt]="post?.title + ' imagen ' + (currentImageIndex() + 1)" />
                       @if (post?.image_url!.length > 1) {
-                        <button class="carousel-btn prev" (click)="prevImage()" aria-label="Imagen anterior">
+                        <button class="carousel-btn prev desktop-only" (click)="prevImage()" aria-label="Imagen anterior">
                           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M15 18l-6-6 6-6" />
                           </svg>
                         </button>
-                        <button class="carousel-btn next" (click)="nextImage()" aria-label="Imagen siguiente">
+                        <button class="carousel-btn next desktop-only" (click)="nextImage()" aria-label="Imagen siguiente">
                           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M9 18l6-6-6-6" />
                           </svg>
@@ -101,6 +105,11 @@ import { Post } from '../../../core/models';
       z-index: 10000;
       padding: 1rem;
       animation: fadeIn 0.2s ease;
+      
+      @media (max-width: 600px) {
+        padding: 0;
+        align-items: flex-start;
+      }
     }
     
     @keyframes fadeIn {
@@ -216,7 +225,7 @@ import { Post } from '../../../core/models';
       border: none;
       background: rgba(255, 255, 255, 0.9);
       cursor: pointer;
-      display: flex;
+      display: none;
       align-items: center;
       justify-content: center;
       transition: all 0.2s ease;
@@ -239,6 +248,13 @@ import { Post } from '../../../core/models';
       
       &.next {
         right: 1rem;
+      }
+      
+      /* Show buttons only on desktop (min-width: 1024px) */
+      &.desktop-only {
+        @media (min-width: 1024px) {
+          display: flex;
+        }
       }
     }
     
@@ -330,9 +346,18 @@ import { Post } from '../../../core/models';
     
     /* Responsive */
     @media (max-width: 600px) {
+      .modal-overlay {
+        padding: 0;
+      }
+      
       .modal-container {
-        max-height: 85vh;
-        border-radius: 12px;
+        width: 100%;
+        height: 100%;
+        max-height: 100vh;
+        border-radius: 0;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
       }
       
       .carousel-main {
@@ -355,11 +380,80 @@ import { Post } from '../../../core/models';
       
       .post-details {
         padding: 1.5rem;
+        flex: 1;
+        overflow-y: auto;
       }
       
       .thumbnail {
         width: 50px;
         height: 50px;
+      }
+      
+      .close-btn {
+        top: 0.75rem;
+        right: 0.75rem;
+        width: 36px;
+        height: 36px;
+      }
+    }
+    
+    /* Very small mobile - max-width: 400px */
+    @media (max-width: 400px) {
+      .modal-container {
+        max-height: 90vh;
+        border-radius: 8px;
+      }
+      
+      .carousel-main {
+        height: 200px;
+        
+        img {
+          max-height: 200px;
+        }
+      }
+      
+      .carousel-btn {
+        width: 32px;
+        height: 32px;
+        
+        svg {
+          width: 18px;
+          height: 18px;
+        }
+        
+        &.prev {
+          left: 0.5rem;
+        }
+        
+        &.next {
+          right: 0.5rem;
+        }
+      }
+      
+      .post-details {
+        padding: 1rem;
+      }
+      
+      .post-title {
+        font-size: 1.375rem;
+        margin-bottom: 1rem;
+      }
+      
+      .post-body p {
+        font-size: 0.9375rem;
+        line-height: 1.6;
+      }
+    }
+    
+    /* Ensure modal is scrollable on small screens */
+    @media (max-width: 480px) {
+      .modal-overlay {
+        padding: 0.5rem;
+        align-items: flex-start;
+      }
+      
+      .modal-content {
+        max-height: calc(90vh - 1rem);
       }
     }
   `]
@@ -371,6 +465,48 @@ export class ActivityModalComponent {
   @Output() close = new EventEmitter<void>();
   
   currentImageIndex = signal(0);
+  
+  // Touch handling for swipe gestures
+  private touchStartX: number = 0;
+  private touchStartY: number = 0;
+  private touchEndX: number = 0;
+  private touchEndY: number = 0;
+  private minSwipeDistance: number = 50;
+  
+  // Track touch start position
+  onTouchStart(event: TouchEvent): void {
+    const touch = event.touches[0];
+    this.touchStartX = touch.clientX;
+    this.touchStartY = touch.clientY;
+  }
+  
+  // Track touch end position and detect swipe
+  onTouchEnd(event: TouchEvent): void {
+    const touch = event.changedTouches[0];
+    this.touchEndX = touch.clientX;
+    this.touchEndY = touch.clientY;
+    this.detectSwipe();
+  }
+  
+  // Detect swipe direction
+  private detectSwipe(): void {
+    const deltaX = this.touchEndX - this.touchStartX;
+    const deltaY = this.touchEndY - this.touchStartY;
+    
+    // Only detect horizontal swipes (ignore vertical swipes)
+    if (Math.abs(deltaX) > Math.abs(deltaY)) {
+      // Check if swipe distance exceeds minimum threshold
+      if (Math.abs(deltaX) > this.minSwipeDistance) {
+        if (deltaX > 0) {
+          // Swipe right → previous image
+          this.prevImage();
+        } else {
+          // Swipe left → next image
+          this.nextImage();
+        }
+      }
+    }
+  }
 
   @HostListener('document:keydown.escape')
   onEscapeKey(): void {

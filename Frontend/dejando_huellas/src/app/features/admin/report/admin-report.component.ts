@@ -1,6 +1,6 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { PublicationsService } from '../../../core/services';
+import { PublicationsService, CommunitiesService } from '../../../core/services';
 import { SpinnerComponent } from '../../../shared/components';
 import * as XLSX from 'xlsx';
 
@@ -50,18 +50,36 @@ interface ReportData {
           </ul>
           
           @if (years().length > 0) {
-            <div class="year-filter">
-              <label for="year-select">Filtrar por año:</label>
-              <select 
-                id="year-select"
-                [value]="selectedYear()"
-                (change)="onYearChange($event)"
-              >
-                <option [value]="null">Todos los años</option>
-                @for (year of years(); track year) {
-                  <option [value]="year">{{ year }}</option>
-                }
-              </select>
+            <div class="filter-row">
+              <div class="year-filter">
+                <label for="year-select">Filtrar por año:</label>
+                <select 
+                  id="year-select"
+                  [value]="selectedYear()"
+                  (change)="onYearChange($event)"
+                >
+                  <option [value]="null">Todos los años</option>
+                  @for (year of years(); track year) {
+                    <option [value]="year">{{ year }}</option>
+                  }
+                </select>
+              </div>
+              
+              @if (communities().length > 0) {
+                <div class="community-filter">
+                  <label for="community-select">Filtrar por comunidad:</label>
+                  <select 
+                    id="community-select"
+                    [value]="selectedCommunity()"
+                    (change)="onCommunityChange($event)"
+                  >
+                    <option [value]="null">Todas las comunidades</option>
+                    @for (community of communities(); track community.id) {
+                      <option [value]="community.id">{{ community.name }}</option>
+                    }
+                  </select>
+                </div>
+              }
             </div>
           }
 
@@ -74,6 +92,9 @@ interface ReportData {
               {{ filteredCount() }} {{ filteredCount() === 1 ? 'publicación encontrada' : 'publicaciones encontradas' }}
               @if (selectedYear()) {
                 <span class="year-badge">Año {{ selectedYear() }}</span>
+              }
+              @if (selectedCommunity()) {
+                <span class="community-badge">{{ getCommunityDisplayName(selectedCommunity()!) }}</span>
               }
             </p>
           }
@@ -192,23 +213,15 @@ interface ReportData {
         list-style: none;
         padding: 0;
         margin: 0 0 1rem;
+      }
 
-        li {
-          color: #616161;
-          padding: 0.25rem 0;
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
+      .report-columns li {
+        color: #616161;
+        padding: 0.25rem 0;
+        display: block;
 
-          &:before {
-            content: '✓';
-            color: #4CAF50;
-            font-weight: bold;
-          }
-
-          strong {
-            color: #212121;
-          }
+        strong {
+          color: #212121;
         }
       }
 
@@ -233,13 +246,22 @@ interface ReportData {
           font-size: 0.75rem;
           font-weight: 600;
         }
+
+        .community-badge {
+          background: #4CAF50;
+          color: white;
+          padding: 0.25rem 0.75rem;
+          border-radius: 12px;
+          font-size: 0.75rem;
+          font-weight: 600;
+        }
       }
 
-      .year-filter {
+      .year-filter,
+      .community-filter {
         display: flex;
         align-items: center;
         gap: 0.75rem;
-        margin-bottom: 1rem;
 
         label {
           color: #616161;
@@ -267,6 +289,13 @@ interface ReportData {
             box-shadow: 0 0 0 2px rgba(27, 94, 32, 0.1);
           }
         }
+      }
+
+      .filter-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-bottom: 1rem;
       }
     }
 
@@ -373,10 +402,28 @@ interface ReportData {
       }
 
       .report-info {
-        text-align: center;
+        text-align: left;
+      }
 
-        .report-columns li {
-          justify-content: center;
+      .report-info .report-columns li {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+      }
+
+      .filter-row {
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+
+      .year-filter,
+      .community-filter {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.5rem;
+
+        select {
+          width: 100%;
         }
       }
 
@@ -393,10 +440,13 @@ interface ReportData {
 })
 export class AdminReportComponent implements OnInit {
   private publicationsService = inject(PublicationsService);
+  private communitiesService = inject(CommunitiesService);
   
   isLoading = signal(true);
   years = signal<number[]>([]);
   selectedYear = signal<number | null>(null);
+  communities = signal<any[]>([]);
+  selectedCommunity = signal<string | null>(null);
   posts = signal<any[]>([]);
   filteredCount = signal(0);
   error = signal('');
@@ -404,6 +454,18 @@ export class AdminReportComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadPosts();
+    this.loadCommunities();
+  }
+
+  loadCommunities(): void {
+    this.communitiesService.getAllCommunities().subscribe({
+      next: (response) => {
+        this.communities.set(response.communities);
+      },
+      error: (err) => {
+        console.error('Error loading communities:', err);
+      }
+    });
   }
 
   loadPosts(): void {
@@ -439,26 +501,51 @@ export class AdminReportComponent implements OnInit {
     this.updateFilteredCount();
   }
 
-  private updateFilteredCount(): void {
+  onCommunityChange(event: Event): void {
+    const target = event.target as HTMLSelectElement;
+    const value = target.value;
+    this.selectedCommunity.set(value || null);
+    this.updateFilteredCount();
+  }
+
+  private applyFilters(posts: any[]): any[] {
+    let filtered = posts;
     const year = this.selectedYear();
-    if (year === null) {
-      this.filteredCount.set(this.posts().length);
-    } else {
-      const filtered = this.posts().filter(post => 
+    const communityId = this.selectedCommunity();
+    
+    if (year !== null) {
+      filtered = filtered.filter(post => 
         new Date(post.created_at).getFullYear() === year
       );
-      this.filteredCount.set(filtered.length);
     }
+    
+    if (communityId !== null) {
+      const communityName = this.getCommunityDisplayName(communityId);
+      filtered = filtered.filter(post => 
+        post.community === communityName
+      );
+    }
+    
+    return filtered;
+  }
+
+  private updateFilteredCount(): void {
+    const filtered = this.applyFilters(this.posts());
+    this.filteredCount.set(filtered.length);
   }
 
   private getFilteredPosts(): any[] {
-    const year = this.selectedYear();
-    if (year === null) {
-      return this.posts();
-    }
-    return this.posts().filter(post => 
-      new Date(post.created_at).getFullYear() === year
-    );
+    return this.applyFilters(this.posts());
+  }
+
+  private getCommunityName(id: string): string {
+    const community = this.communities().find(c => c.id === id);
+    return community ? community.name.toLowerCase().replace(/\s+/g, '_') : id;
+  }
+
+  getCommunityDisplayName(id: string): string {
+    const community = this.communities().find(c => c.id === id);
+    return community ? community.name : id;
   }
 
   downloadReport(): void {
@@ -469,15 +556,8 @@ export class AdminReportComponent implements OnInit {
     this.publicationsService.getAllPosts().subscribe({
       next: (response) => {
         try {
-          let posts = response.posts;
-          
-          // Filter by selected year if any
-          const year = this.selectedYear();
-          if (year !== null) {
-            posts = posts.filter(post => 
-              new Date(post.created_at).getFullYear() === year
-            );
-          }
+          // Apply all filters
+          const posts = this.applyFilters(response.posts);
           
           // Transform data for Excel
           const reportData: ReportData[] = posts.map(post => ({
@@ -506,10 +586,13 @@ export class AdminReportComponent implements OnInit {
           const workbook = XLSX.utils.book_new();
           XLSX.utils.book_append_sheet(workbook, worksheet, 'Actividades');
 
-          // Generate filename with current date and optional year
+          // Generate filename with filters
           const currentDate = new Date().toISOString().split('T')[0];
+          const year = this.selectedYear();
+          const communityId = this.selectedCommunity();
           const yearSuffix = year ? `_${year}` : '';
-          const filename = `informe_actividades${yearSuffix}_${currentDate}.xlsx`;
+          const communitySuffix = communityId ? `_${this.getCommunityName(communityId)}` : '';
+          const filename = `informe_actividades${yearSuffix}${communitySuffix}_${currentDate}.xlsx`;
 
           // Download the file
           XLSX.writeFile(workbook, filename);

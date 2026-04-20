@@ -276,6 +276,7 @@ export interface ImageItem {
       h1 {
         font-size: clamp(2rem, 5vw, 3rem);
         margin: 0 0 1rem;
+        color: white;
       }
       
       p {
@@ -454,6 +455,7 @@ export interface ImageItem {
         margin-bottom: 0.5rem;
         font-weight: 500;
         color: #424242;
+        font-size: 0.9375rem;
       }
       
       input,
@@ -474,11 +476,20 @@ export interface ImageItem {
         &::placeholder {
           color: #9E9E9E;
         }
+        
+        @media (max-width: 480px) {
+          padding: 0.625rem 0.75rem;
+          font-size: 16px; /* Prevent zoom on iOS */
+        }
       }
       
       textarea {
         resize: vertical;
         min-height: 120px;
+        
+        @media (max-width: 480px) {
+          min-height: 100px;
+        }
       }
     }
     
@@ -547,6 +558,11 @@ export interface ImageItem {
       z-index: 10000;
       padding: 2rem 1rem;
       overflow-y: auto;
+      
+      @media (max-width: 480px) {
+        padding: 0.5rem;
+        align-items: stretch;
+      }
     }
     
     .modal-container {
@@ -560,6 +576,11 @@ export interface ImageItem {
       flex-direction: column;
       box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
       position: relative;
+      
+      @media (max-width: 480px) {
+        border-radius: 12px;
+        max-height: 95vh;
+      }
     }
     
     .close-btn {

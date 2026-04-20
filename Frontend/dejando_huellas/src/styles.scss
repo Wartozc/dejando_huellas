@@ -23,6 +23,13 @@ body {
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* Prevent horizontal scroll on all devices */
+html, body {
+  max-width: 100vw;
+  overflow-x: hidden;
 }
 
 /* Typography */
@@ -30,6 +37,18 @@ h1, h2, h3, h4, h5, h6 {
   font-weight: 700;
   line-height: 1.2;
   color: #1B5E20;
+}
+
+h1 {
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+}
+
+h2 {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+}
+
+h3 {
+  font-size: clamp(1.25rem, 2.5vw, 1.5rem);
 }
 
 p {
@@ -83,10 +102,12 @@ img {
   display: block;
 }
 
-/* Buttons */
+/* Buttons - Ensure minimum touch target size */
 button {
   font-family: inherit;
   cursor: pointer;
+  min-height: 44px;
+  min-width: 44px;
 }
 
 /* Forms */
@@ -94,6 +115,14 @@ input,
 textarea,
 select {
   font-family: inherit;
+}
+
+/* Ensure form inputs have adequate touch targets */
+input,
+textarea,
+select,
+button {
+  touch-action: manipulation;
 }
 
 /* Utility Classes */
@@ -114,6 +143,65 @@ select {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 1.5rem;
+}
+
+/* ===================================
+   Responsive Breakpoints
+   =================================== */
+
+:root {
+  /* Color Palette - Design System */
+  --color-primary: #1B5E20;
+  --color-secondary: #4CAF50;
+  --color-accent: #F4A261;
+  --color-accent-hover: #E08B4A;
+  --color-light-green: #A5D6A7;
+  --color-background: #F5F5F5;
+  --color-text: #212121;
+  --color-text-secondary: #616161;
+  --color-text-muted: #757575;
+  
+  /* Breakpoints */
+  --bp-mobile: 480px;
+  --bp-tablet: 768px;
+  --bp-desktop: 1024px;
+  
+  /* Spacing */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
+  
+  /* Border Radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  
+  /* Shadows */
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+/* Mobile-first responsive adjustments */
+@media (max-width: 480px) {
+  html {
+    font-size: 14px;
+  }
+  
+  .container {
+    padding: 0 1rem;
+  }
+}
+
+/* Tablet adjustments */
+@media (min-width: 481px) and (max-width: 768px) {
+  html {
+    font-size: 15px;
+  }
 }
 
 /* Animations */

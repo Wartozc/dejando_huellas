@@ -140,14 +140,14 @@ import { Post } from '../../../core/models';
     
     /* Hero Section */
     .hero {
-      min-height: 70vh;
+      min-height: auto;
       display: flex;
       align-items: center;
       justify-content: center;
-      background: linear-gradient(135deg, #1B5E20 0%, #2E7D32 50%, #4CAF50 100%);
+      background: linear-gradient(135deg, #1B5E20 0%, #4CAF50 100%);
       position: relative;
       overflow: hidden;
-      padding: 4rem 1.5rem;
+      padding: 6rem 0 4rem;
     }
     
     .hero-content {
@@ -161,6 +161,13 @@ import { Post } from '../../../core/models';
         font-weight: 700;
         margin: 0 0 1rem;
         line-height: 1.2;
+        color: white;
+      }
+      
+      @media (max-width: 480px) {
+        h1 {
+          font-size: clamp(1.75rem, 6vw, 2.25rem);
+        }
       }
     }
     
@@ -168,6 +175,18 @@ import { Post } from '../../../core/models';
       font-size: clamp(1rem, 2vw, 1.25rem);
       margin: 0 0 2rem;
       opacity: 0.9;
+      
+      @media (max-width: 480px) {
+        font-size: 1rem;
+        margin: 0 0 1.5rem;
+      }
+    }
+    
+    @media (max-width: 480px) {
+.hero {
+        min-height: auto;
+        padding: 4rem 1rem 3rem;
+      }
     }
     
     .hero-actions {
@@ -185,10 +204,20 @@ import { Post } from '../../../core/models';
       border-radius: 8px;
       font-weight: 600;
       transition: all 0.3s ease;
+      min-height: 48px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       
       &:hover {
         background: #E08B4A;
         transform: translateY(-2px);
+      }
+      
+      @media (max-width: 480px) {
+        padding: 0.75rem 1.5rem;
+        min-height: 44px;
+        width: 100%;
       }
     }
     
@@ -201,10 +230,20 @@ import { Post } from '../../../core/models';
       border-radius: 8px;
       font-weight: 600;
       transition: all 0.3s ease;
+      min-height: 48px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       
       &:hover {
         background: white;
         color: #1B5E20;
+      }
+      
+      @media (max-width: 480px) {
+        padding: 0.75rem 1.5rem;
+        min-height: 44px;
+        width: 100%;
       }
     }
     
@@ -342,6 +381,7 @@ import { Post } from '../../../core/models';
       h2 {
         font-size: 2rem;
         margin: 0 0 1rem;
+        color: white;
       }
       
       p {

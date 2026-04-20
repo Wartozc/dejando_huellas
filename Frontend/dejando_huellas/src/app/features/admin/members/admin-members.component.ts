@@ -281,11 +281,13 @@ import { ButtonComponent, SpinnerComponent, ConfirmDialogComponent } from '../..
       border-radius: 12px;
       overflow: hidden;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      overflow-x: auto;
     }
     
     .members-table {
       width: 100%;
       border-collapse: collapse;
+      min-width: 600px;
       
       th, td {
         padding: 1rem;
@@ -306,6 +308,58 @@ import { ButtonComponent, SpinnerComponent, ConfirmDialogComponent } from '../..
       
       td {
         color: #424242;
+      }
+    }
+    
+    /* Mobile responsive for table */
+    @media (max-width: 768px) {
+      .table-container {
+        border-radius: 8px;
+      }
+      
+      .members-table {
+        min-width: 500px;
+        
+        th, td {
+          padding: 0.75rem;
+        }
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .page-header {
+        flex-direction: column;
+        align-items: stretch;
+        
+        h2 {
+          font-size: 1.25rem;
+        }
+      }
+      
+      .filters {
+        flex-direction: column;
+        
+        .search-input, .filter-select {
+          width: 100%;
+        }
+      }
+      
+      .members-table {
+        font-size: 0.875rem;
+        
+        th, td {
+          padding: 0.625rem;
+        }
+      }
+      
+      .member-info {
+        gap: 0.5rem;
+        
+        .avatar {
+          width: 32px;
+          height: 32px;
+          font-size: 0.75rem;
+        }
       }
     }
     
@@ -428,6 +482,11 @@ import { ButtonComponent, SpinnerComponent, ConfirmDialogComponent } from '../..
       max-width: 500px;
       max-height: 90vh;
       overflow-y: auto;
+      
+      @media (max-width: 480px) {
+        border-radius: 12px;
+        max-height: 95vh;
+      }
     }
     
     .modal-header {

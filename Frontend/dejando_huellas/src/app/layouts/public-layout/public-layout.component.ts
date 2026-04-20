@@ -22,26 +22,26 @@ import { ChatBotComponent } from '../../features/public/chatbot/chatbot.componen
           
           <!-- Desktop Menu -->
           <div class="navbar-menu" [class.is-open]="mobileMenuOpen()">
-            <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-link">
+            <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-link" (click)="closeMobileMenu()">
               Inicio
             </a>
-            <a routerLink="/nosotros" routerLinkActive="active" class="nav-link">
+            <a routerLink="/nosotros" routerLinkActive="active" class="nav-link" (click)="closeMobileMenu()">
               Nosotros
             </a>
-            <a routerLink="/actividades" routerLinkActive="active" class="nav-link">
+            <a routerLink="/actividades" routerLinkActive="active" class="nav-link" (click)="closeMobileMenu()">
               Actividades
             </a>
-            <a routerLink="/contacto" routerLinkActive="active" class="nav-link">
+            <a routerLink="/contacto" routerLinkActive="active" class="nav-link" (click)="closeMobileMenu()">
               Contacto
             </a>
             
             @if (authService.isAuthenticated()) {
               @if (authService.isAdmin()) {
-                <a routerLink="/admin/dashboard" class="nav-link admin-link">
+                <a routerLink="/admin/dashboard" class="nav-link admin-link" (click)="closeMobileMenu()">
                   Panel Admin
                 </a>
               }
-              <a routerLink="/comunidad" routerLinkActive="active" class="nav-link comunidad-link">
+              <a routerLink="/comunidad" routerLinkActive="active" class="nav-link comunidad-link" (click)="closeMobileMenu()">
                 Comunidad
               </a>
               <div class="user-menu">
@@ -65,10 +65,10 @@ import { ChatBotComponent } from '../../features/public/chatbot/chatbot.componen
                 }
               </div>
             } @else {
-              <a routerLink="/register" class="nav-link register-btn">
+              <a routerLink="/register" class="nav-link register-btn" (click)="closeMobileMenu()">
                 Registrarse
               </a>
-              <a routerLink="/login" class="nav-link login-btn">
+              <a routerLink="/login" class="nav-link login-btn" (click)="closeMobileMenu()">
                 Iniciar Sesión
               </a>
             }
@@ -86,6 +86,11 @@ import { ChatBotComponent } from '../../features/public/chatbot/chatbot.componen
           </button>
         </div>
       </nav>
+      
+      <!-- Mobile Menu Overlay -->
+      @if (mobileMenuOpen()) {
+        <div class="mobile-menu-overlay" (click)="closeMobileMenu()"></div>
+      }
       
       <!-- Main Content -->
       <main class="main-content">
@@ -410,6 +415,23 @@ import { ChatBotComponent } from '../../features/public/chatbot/chatbot.componen
       }
     }
     
+    /* Mobile Menu Overlay */
+    .mobile-menu-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 999;
+      animation: fadeIn 0.2s ease;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
     /* Main Content */
     .main-content {
       flex: 1;
@@ -426,24 +448,24 @@ import { ChatBotComponent } from '../../features/public/chatbot/chatbot.componen
     .footer-container {
       max-width: 1200px;
       margin: 0 auto;
-      padding: 3rem 1.5rem;
+      padding: 2rem 1.5rem;
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 2rem;
+      gap: 1.5rem;
     }
     
     .footer-section {
       h4 {
-        margin: 0 0 1rem;
-        font-size: 1.125rem;
+        margin: 0 0 0.75rem;
+        font-size: 1rem;
         font-weight: 600;
       }
       
       p, a {
-        margin: 0.5rem 0;
+        margin: 0.375rem 0;
         color: rgba(255, 255, 255, 0.8);
-        font-size: 0.875rem;
-        line-height: 1.6;
+        font-size: 0.8125rem;
+        line-height: 1.5;
       }
       
       a {
@@ -458,13 +480,62 @@ import { ChatBotComponent } from '../../features/public/chatbot/chatbot.componen
     
     .footer-bottom {
       border-top: 1px solid rgba(255, 255, 255, 0.1);
-      padding: 1.5rem;
+      padding: 1rem 1.5rem;
       text-align: center;
       
       p {
         margin: 0;
         color: rgba(255, 255, 255, 0.6);
-        font-size: 0.8125rem;
+        font-size: 0.75rem;
+      }
+    }
+    
+    /* Mobile Responsive - max-width: 480px */
+    @media (max-width: 480px) {
+      .navbar-container {
+        padding: 0.625rem 1rem;
+      }
+      
+      .logo {
+        width: 36px;
+        height: 36px;
+      }
+      
+      .brand-text {
+        display: none;
+      }
+      
+      .navbar-menu {
+        top: 56px;
+      }
+      
+      .main-content {
+        margin-top: 56px;
+      }
+      
+      .footer-container {
+        padding: 1.5rem 1rem;
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+        text-align: center;
+      }
+      
+      .footer-section {
+        h4 {
+          margin-bottom: 0.5rem;
+        }
+      }
+    }
+    
+    /* Tablet Responsive - 481px to 768px */
+    @media (min-width: 481px) and (max-width: 768px) {
+      .brand-text {
+        display: block;
+        font-size: 1rem;
+      }
+      
+      .footer-container {
+        grid-template-columns: repeat(2, 1fr);
       }
     }
   `]
@@ -501,6 +572,10 @@ export class PublicLayoutComponent {
     this.mobileMenuOpen.update(v => !v);
   }
 
+  closeMobileMenu(): void {
+    this.mobileMenuOpen.set(false);
+  }
+
   toggleUserDropdown(event: Event): void {
     event.stopPropagation();
     this.dropdownOpen.update(v => !v);
@@ -508,6 +583,20 @@ export class PublicLayoutComponent {
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: Event): void {
+    // Close mobile menu when clicking outside the menu
+    if (this.mobileMenuOpen()) {
+      const navbarMenu = this.elementRef.nativeElement.querySelector('.navbar-menu');
+      const mobileMenuBtn = this.elementRef.nativeElement.querySelector('.mobile-menu-btn');
+      const target = event.target as HTMLElement;
+      
+      const isClickInsideMenu = navbarMenu?.contains(target) || mobileMenuBtn?.contains(target);
+      
+      if (!isClickInsideMenu) {
+        this.mobileMenuOpen.set(false);
+      }
+    }
+    
+    // Close user dropdown when clicking outside
     if (!this.dropdownOpen()) {
       return;
     }

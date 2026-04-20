@@ -174,6 +174,7 @@ import { ButtonComponent } from '../../../shared/components';
       h1 {
         font-size: clamp(2rem, 5vw, 3rem);
         margin: 0 0 1rem;
+        color: white;
       }
       
       p {
@@ -191,10 +192,11 @@ import { ButtonComponent } from '../../../shared/components';
     .contact-grid {
       display: grid;
       grid-template-columns: 1fr;
-      gap: 3rem;
+      gap: 2rem;
       
-      @media (min-width: 992px) {
+      @media (min-width: 768px) {
         grid-template-columns: 1.5fr 1fr;
+        gap: 2.5rem;
       }
     }
     
@@ -209,6 +211,16 @@ import { ButtonComponent } from '../../../shared/components';
         color: #1B5E20;
         margin: 0 0 1.5rem;
         font-size: 1.5rem;
+      }
+      
+      @media (max-width: 480px) {
+        padding: 1.5rem;
+        border-radius: 12px;
+        
+        h2 {
+          font-size: 1.25rem;
+          margin-bottom: 1rem;
+        }
       }
     }
     

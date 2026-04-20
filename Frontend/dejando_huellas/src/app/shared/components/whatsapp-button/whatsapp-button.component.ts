@@ -73,6 +73,17 @@ import { environment } from '../../../../environments/environment';
           transform: translateX(0);
         }
       }
+      
+      /* Mobile adjustments */
+      @media (max-width: 480px) {
+        width: 52px;
+        height: 52px;
+        
+        svg {
+          width: 26px;
+          height: 26px;
+        }
+      }
     }
   `]
 })

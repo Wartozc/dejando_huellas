@@ -16,16 +16,21 @@ interface NavItem {
   imports: [CommonModule, RouterModule, ToastContainerComponent],
   template: `
     <div class="admin-layout">
+      <!-- Mobile Overlay -->
+      @if (mobileMenuOpen()) {
+        <div class="sidebar-overlay" (click)="closeMobileMenu()"></div>
+      }
+      
       <!-- Sidebar -->
-      <aside class="sidebar" [class.collapsed]="sidebarCollapsed()">
+      <aside class="sidebar" [class.collapsed]="sidebarCollapsed()" [class.mobile-open]="mobileMenuOpen()">
         <div class="sidebar-header">
-          <a routerLink="/admin/dashboard" class="sidebar-brand">
+          <a (click)="toggleSidebar()" class="sidebar-brand" style="cursor: pointer;">
             <img src="/logotipo.jpeg" alt="Logo" class="sidebar-logo" />
             @if (!sidebarCollapsed()) {
-              <span>Admin Panel</span>
+              <span>Menú Principal</span>
             }
           </a>
-          <button class="sidebar-toggle" (click)="toggleSidebar()">
+          <button class="sidebar-toggle desktop-only" (click)="toggleSidebar()">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               @if (sidebarCollapsed()) {
                 <path d="M9 18l6-6-6-6"/>
@@ -43,6 +48,7 @@ interface NavItem {
               routerLinkActive="active"
               class="nav-item"
               [title]="sidebarCollapsed() ? item.label : ''"
+              (click)="onNavItemClick()"
             >
               <span class="nav-icon" [innerHTML]="item.icon"></span>
               @if (!sidebarCollapsed()) {
@@ -53,7 +59,7 @@ interface NavItem {
         </nav>
         
         <div class="sidebar-footer">
-          <a routerLink="/" class="nav-item" title="Volver al sitio">
+          <a routerLink="/" class="nav-item" title="Volver al sitio" (click)="onNavItemClick()">
             <span class="nav-icon">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M19 12H5M12 19l-7-7 7-7"/>
@@ -71,9 +77,23 @@ interface NavItem {
         <!-- Top Bar -->
         <header class="admin-header">
           <div class="header-left">
+            <button class="mobile-menu-toggle" (click)="toggleMobileMenu()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                @if (mobileMenuOpen()) {
+                  <path d="M18 6L6 18M6 6l12 12"/>
+                } @else {
+                  <path d="M4 6h16M4 12h16M4 18h16"/>
+                }
+              </svg>
+            </button>
             <h1 class="page-title">{{ pageTitle() }}</h1>
           </div>
           <div class="header-right">
+            <a routerLink="/" class="mobile-back-btn desktop-hidden" title="Volver al sitio">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 12H5M12 19l-7-7 7-7"/>
+              </svg>
+            </a>
             <div class="user-menu">
               <span class="user-name">{{ authService.user()?.name }}</span>
               <span class="user-role">{{ authService.user()?.role }}</span>
@@ -84,7 +104,7 @@ interface NavItem {
                 <polyline points="16,17 21,12 16,7"/>
                 <line x1="21" y1="12" x2="9" y2="12"/>
               </svg>
-              Cerrar Sesión
+              <span class="logout-text">Cerrar Sesión</span>
             </button>
           </div>
         </header>
@@ -106,13 +126,30 @@ interface NavItem {
       background: #F5F5F5;
     }
     
+    /* Sidebar Overlay for Mobile */
+    .sidebar-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 99;
+      animation: fadeIn 0.2s ease;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
     /* Sidebar */
     .sidebar {
       width: 260px;
       background: white;
       display: flex;
       flex-direction: column;
-      transition: width 0.3s ease;
+      transition: width 0.3s ease, transform 0.3s ease;
       box-shadow: 2px 0 8px rgba(0, 0, 0, 0.08);
       z-index: 100;
       
@@ -179,6 +216,12 @@ interface NavItem {
       svg {
         width: 18px;
         height: 18px;
+      }
+    }
+    
+    .desktop-only {
+      @media (max-width: 768px) {
+        display: none !important;
       }
     }
     
@@ -255,6 +298,41 @@ interface NavItem {
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
     }
     
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    
+    .mobile-menu-toggle {
+      display: none;
+      width: auto;
+      min-width: 40px;
+      height: 40px;
+      padding: 0 0.75rem;
+      border: none;
+      background: #F5F5F5;
+      border-radius: 8px;
+      cursor: pointer;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      color: #1B5E20;
+      flex-shrink: 0;
+      font-weight: 500;
+      font-size: 0.875rem;
+      
+      svg {
+        width: 24px;
+        height: 24px;
+        flex-shrink: 0;
+      }
+      
+      &:hover {
+        background: #E0E0E0;
+      }
+    }
+    
     .page-title {
       margin: 0;
       font-size: 1.5rem;
@@ -265,9 +343,40 @@ interface NavItem {
     .header-right {
       display: flex;
       align-items: center;
-      gap: 1.5rem;
+      gap: 1rem;
     }
-    
+
+    .mobile-back-btn {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      background: #F5F5F5;
+      color: #1B5E20;
+      transition: all 0.2s ease;
+      
+      svg {
+        width: 20px;
+        height: 20px;
+      }
+      
+      &:hover {
+        background: #E8F5E9;
+      }
+    }
+
+    .desktop-hidden {
+      display: flex !important;
+    }
+
+    @media (min-width: 769px) {
+      .desktop-hidden {
+        display: none !important;
+      }
+    }
+
     .user-menu {
       display: flex;
       flex-direction: column;
@@ -277,10 +386,11 @@ interface NavItem {
     .user-name {
       font-weight: 600;
       color: #212121;
+      font-size: 0.875rem;
     }
     
     .user-role {
-      font-size: 0.75rem;
+      font-size: 0.7rem;
       color: #757575;
       text-transform: uppercase;
     }
@@ -297,10 +407,12 @@ interface NavItem {
       cursor: pointer;
       transition: all 0.2s ease;
       font-weight: 500;
+      font-size: 0.875rem;
       
       svg {
         width: 18px;
         height: 18px;
+        flex-shrink: 0;
       }
       
       &:hover {
@@ -316,8 +428,12 @@ interface NavItem {
       overflow-y: auto;
     }
     
-    /* Responsive */
+    /* Responsive - Tablet and Mobile */
     @media (max-width: 768px) {
+      .mobile-menu-toggle {
+        display: flex;
+      }
+      
       .sidebar {
         position: fixed;
         left: 0;
@@ -325,21 +441,68 @@ interface NavItem {
         bottom: 0;
         transform: translateX(-100%);
         
-        &.open {
+        &.mobile-open {
           transform: translateX(0);
+        }
+        
+        &.collapsed {
+          width: 260px;
+          
+          .sidebar-brand span,
+          .nav-label {
+            display: block;
+          }
+          
+          .nav-item {
+            justify-content: flex-start;
+            padding: 0.75rem 1rem;
+          }
         }
       }
       
       .admin-header {
-        padding: 1rem;
+        padding: 0.75rem 1rem;
+      }
+      
+      .page-title {
+        font-size: 1.25rem;
       }
       
       .user-menu {
         display: none;
       }
       
+      .logout-text {
+        display: none;
+      }
+      
+      .logout-btn {
+        padding: 0.5rem;
+        min-width: 40px;
+        justify-content: center;
+      }
+      
       .admin-content {
         padding: 1rem;
+      }
+    }
+    
+    /* Very small mobile */
+    @media (max-width: 480px) {
+      .sidebar {
+        width: 100%;
+      }
+      
+      .admin-header {
+        padding: 0.625rem 0.75rem;
+      }
+      
+      .page-title {
+        font-size: 1.125rem;
+      }
+      
+      .admin-content {
+        padding: 0.75rem;
       }
     }
   `]
@@ -347,6 +510,7 @@ interface NavItem {
 export class AdminLayoutComponent {
   authService = inject(AuthService);
   sidebarCollapsed = signal(false);
+  mobileMenuOpen = signal(false);
   pageTitle = signal('Dashboard');
 
   navItems: NavItem[] = [
@@ -394,6 +558,19 @@ export class AdminLayoutComponent {
 
   toggleSidebar(): void {
     this.sidebarCollapsed.update(v => !v);
+  }
+
+  toggleMobileMenu(): void {
+    this.mobileMenuOpen.update(v => !v);
+  }
+
+  closeMobileMenu(): void {
+    this.mobileMenuOpen.set(false);
+  }
+
+  onNavItemClick(): void {
+    // Close mobile menu when clicking nav items
+    this.closeMobileMenu();
   }
 
   logout(): void {

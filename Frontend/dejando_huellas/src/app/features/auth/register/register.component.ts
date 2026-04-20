@@ -204,6 +204,11 @@ import { ButtonComponent, SpinnerComponent } from '../../../shared/components';
       border-radius: 16px;
       padding: 2.5rem;
       box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+      
+      @media (max-width: 480px) {
+        padding: 1.5rem;
+        border-radius: 12px;
+      }
     }
     
     .loading-state {
@@ -427,6 +432,11 @@ import { ButtonComponent, SpinnerComponent } from '../../../shared/components';
       max-height: 80vh;
       display: flex;
       flex-direction: column;
+      
+      @media (max-width: 480px) {
+        max-height: 90vh;
+        border-radius: 12px;
+      }
     }
     
     .modal-header {

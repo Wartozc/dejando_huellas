@@ -63,6 +63,13 @@ import { ToastService, Toast } from '../../../core/services/toast.service';
       flex-direction: column;
       gap: 0.5rem;
       max-width: 400px;
+      
+      @media (max-width: 480px) {
+        left: 0.5rem;
+        right: 0.5rem;
+        top: 0.5rem;
+        max-width: none;
+      }
     }
     
     .toast {
@@ -74,6 +81,11 @@ import { ToastService, Toast } from '../../../core/services/toast.service';
       background: white;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
       animation: slideIn 0.3s ease-out;
+      
+      @media (max-width: 480px) {
+        padding: 0.75rem;
+        gap: 0.5rem;
+      }
     }
     
     @keyframes slideIn {
@@ -116,12 +128,21 @@ import { ToastService, Toast } from '../../../core/services/toast.service';
         width: 100%;
         height: 100%;
       }
+      
+      @media (max-width: 480px) {
+        width: 20px;
+        height: 20px;
+      }
     }
     
     .toast-message {
       flex: 1;
       color: #212121;
       font-size: 0.9rem;
+      
+      @media (max-width: 480px) {
+        font-size: 0.8125rem;
+      }
     }
     
     .toast-close {
@@ -142,6 +163,13 @@ import { ToastService, Toast } from '../../../core/services/toast.service';
       svg {
         width: 100%;
         height: 100%;
+      }
+      
+      @media (max-width: 480px) {
+        width: 20px;
+        height: 20px;
+        min-width: 20px;
+        min-height: 20px;
       }
     }
   `]
