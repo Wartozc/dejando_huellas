@@ -7,7 +7,8 @@
     "build": "ng build",
     "build:prod": "ng build --configuration production",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "serve:pwa": "ng build && npx http-server dist/dejando_huellas -p 8080 -o"
   },
   "private": true,
   "packageManager": "npm@11.12.0",
