@@ -25,19 +25,23 @@ func main() {
 	fmt.Println("===========================================")
 	fmt.Println()
 
-	// Check for custom email/password from environment
+	// Read admin credentials from environment (must be set)
 	adminEmail := os.Getenv("ADMIN_EMAIL")
 	adminPassword := os.Getenv("ADMIN_PASSWORD")
 	adminName := os.Getenv("ADMIN_NAME")
 
-	if adminEmail == "" {
-		adminEmail = config.DefaultAdminEmail
-	}
-	if adminPassword == "" {
-		adminPassword = config.DefaultAdminPassword
+	if adminEmail == "" || adminPassword == "" {
+		fmt.Println("ERROR: ADMIN_EMAIL and ADMIN_PASSWORD must be set in .env or environment variables.")
+		fmt.Println()
+		fmt.Println("Usage:")
+		fmt.Println("  $env:ADMIN_EMAIL=\"admin@example.com\"")
+		fmt.Println("  $env:ADMIN_PASSWORD=\"your-secure-password\"")
+		fmt.Println("  $env:ADMIN_NAME=\"Administrator\"")
+		fmt.Println("  go run scripts/reset_admin.go")
+		os.Exit(1)
 	}
 	if adminName == "" {
-		adminName = config.DefaultAdminName
+		adminName = "Administrator"
 	}
 
 	userRepo := repository.NewUserRepository(ctx, cfg.MongoURI, cfg.Database)

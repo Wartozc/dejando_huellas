@@ -54,8 +54,8 @@ func main() {
 		log.Printf("Warning: Failed to create chatbot indexes: %v", err)
 	}
 
-	// Initialize default admin user
-	if err := config.InitializeAdmin(ctx, userRepo, config.DefaultInitData()); err != nil {
+	// Initialize default admin user (uses .env values or hardcoded defaults)
+	if err := config.InitializeAdmin(ctx, userRepo, cfg.AdminInitData()); err != nil {
 		log.Printf("Warning: Failed to initialize admin user: %v", err)
 	}
 

@@ -19,6 +19,9 @@ type Config struct {
 	GitHubBranch     string
 	GitHubImagesPath string
 	MaxImageUploads  int
+	AdminEmail       string
+	AdminPassword    string
+	AdminName        string
 }
 
 func Load() *Config {
@@ -37,7 +40,19 @@ func Load() *Config {
 		GitHubRepo:       getEnv("GITHUB_REPO", "dejando_huellas"),
 		GitHubBranch:     getEnv("GITHUB_BRANCH", "trunk"),
 		GitHubImagesPath: getEnv("GITHUB_IMAGES_PATH", "images"),
-		MaxImageUploads: getEnvAsInt("MAX_IMAGE_UPLOADS", 5),
+		MaxImageUploads:  getEnvAsInt("MAX_IMAGE_UPLOADS", 5),
+		AdminEmail:       getEnv("ADMIN_EMAIL", ""),
+		AdminPassword:    getEnv("ADMIN_PASSWORD", ""),
+		AdminName:        getEnv("ADMIN_NAME", "Administrator"),
+	}
+}
+
+// AdminInitData returns InitData populated from the Config's admin settings
+func (cfg *Config) AdminInitData() *InitData {
+	return &InitData{
+		AdminEmail:    cfg.AdminEmail,
+		AdminPassword: cfg.AdminPassword,
+		AdminName:     cfg.AdminName,
 	}
 }
 

@@ -10,12 +10,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-const (
-	DefaultAdminEmail    = "admin@dejandohuellas.com"
-	DefaultAdminPassword = "admin123"
-	DefaultAdminName     = "Administrator"
-)
-
 // InitData holds the configuration for initial data setup
 type InitData struct {
 	AdminEmail    string
@@ -23,19 +17,14 @@ type InitData struct {
 	AdminName     string
 }
 
-// DefaultInitData returns the default admin user configuration
-func DefaultInitData() *InitData {
-	return &InitData{
-		AdminEmail:    DefaultAdminEmail,
-		AdminPassword: DefaultAdminPassword,
-		AdminName:     DefaultAdminName,
-	}
-}
-
-// InitializeAdmin creates the initial admin user if it doesn't exist
+// InitializeAdmin creates the initial admin user if it doesn't exist.
+// Requires AdminEmail and AdminPassword to be set (from .env or environment variables).
+// If they are empty, the admin creation is skipped for security reasons.
 func InitializeAdmin(ctx context.Context, userRepo *repository.UserRepository, initData *InitData) error {
-	if initData == nil {
-		initData = DefaultInitData()
+	if initData == nil || initData.AdminEmail == "" || initData.AdminPassword == "" {
+		log.Println("WARNING: Admin credentials not configured. Skipping admin initialization.")
+		log.Println("Set ADMIN_EMAIL and ADMIN_PASSWORD in your .env file or environment variables.")
+		return nil
 	}
 
 	// Check if admin already exists
@@ -70,7 +59,6 @@ func InitializeAdmin(ctx context.Context, userRepo *repository.UserRepository, i
 
 	log.Printf("✓ Initial admin user created successfully!")
 	log.Printf("  Email: %s", initData.AdminEmail)
-	log.Printf("  Password: %s", initData.AdminPassword)
 	log.Printf("  Status: APPROVED (no approval needed)")
 
 	return nil
