@@ -117,7 +117,11 @@ import { ButtonComponent } from '../../../shared/components';
                   </svg>
                 </div>
                 <h3>Correo</h3>
-                <p>contacto&#64;dejandohuellas.com</p>
+                <p>
+                  <a href="mailto:asoempdejandohuellas@gmail.com" class="contact-link">
+                    asoempdejandohuellas&#64;gmail.com
+                  </a>
+                </p>
               </div>
               
               <div class="info-card">
@@ -127,22 +131,19 @@ import { ButtonComponent } from '../../../shared/components';
                   </svg>
                 </div>
                 <h3>WhatsApp</h3>
-                <p>+57 300 123 4567</p>
+                <p>
+                  <a href="https://wa.me/573508298597" target="_blank" rel="noopener noreferrer" class="contact-link">
+                    +57 350 829 8597
+                  </a>
+                </p>
               </div>
               
               <div class="social-links">
                 <h3>Síguenos</h3>
                 <div class="social-icons">
-                  <a href="#" class="social-icon" title="Facebook">
+                  <a href="https://www.facebook.com/emprendedores.dejandohuellasebejico" target="_blank" rel="noopener noreferrer" class="social-icon" title="Facebook">
                     <svg viewBox="0 0 24 24" fill="currentColor">
                       <path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/>
-                    </svg>
-                  </a>
-                  <a href="#" class="social-icon" title="Instagram">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
-                      <path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/>
-                      <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
                     </svg>
                   </a>
                 </div>
@@ -351,6 +352,17 @@ import { ButtonComponent } from '../../../shared/components';
       svg {
         width: 24px;
         height: 24px;
+      }
+    }
+    
+    .contact-link {
+      color: #616161;
+      text-decoration: none;
+      transition: color 0.2s ease;
+      
+      &:hover {
+        color: #1B5E20;
+        text-decoration: underline;
       }
     }
     
